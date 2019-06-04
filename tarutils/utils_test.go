@@ -15,7 +15,11 @@ func testUntarOfFiles(files []testutils.MockFile, dirs []string, expected testut
 		testutils.TarGzFiles(files, dirs, &buffer)
 
 		mapFiles := testutils.NewMapFiles()
-		Untar(&buffer, &mapFiles)
+		err := Untar(&buffer, &mapFiles)
+
+		if err != nil {
+			t.Errorf("Unexpected error: %s\n", err.Error())
+		}
 
 		if !reflect.DeepEqual(mapFiles, expected) {
 			t.Errorf("Untar failed: Wanted %s Got %s", expected, mapFiles)
@@ -34,4 +38,15 @@ func TestUntar(t *testing.T) {
 	}, []string{"dir/"})
 
 	t.Run("Single file in single directory", testUntarOfFiles(files, dirs, expected))
+}
+
+func TestBadTar(t *testing.T) {
+	var buffer bytes.Buffer
+
+	mapFiles := testutils.NewMapFiles()
+	err := Untar(&buffer, &mapFiles)
+
+	if err == nil {
+		t.Errorf("Not supposed to give a nil error! Half reader used!")
+	}
 }
