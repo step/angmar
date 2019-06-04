@@ -8,23 +8,30 @@ import (
 	"github.com/step/durin/testutils"
 )
 
-func TestUntar(t *testing.T) {
-	var buffer bytes.Buffer
+func testUntarOfFiles(files []testutils.MockFile, dirs []string, expected testutils.MapFiles) func(t *testing.T) {
+	return func(t *testing.T) {
+		var buffer bytes.Buffer
 
-	var files = []testutils.MockFile{
-		{"dir/foo", "hello"},
+		testutils.TarGzFiles(files, dirs, &buffer)
+
+		mapFiles := testutils.NewMapFiles()
+		Untar(&buffer, &mapFiles)
+
+		if !reflect.DeepEqual(mapFiles, expected) {
+			t.Errorf("Untar failed: Wanted %s Got %s", expected, mapFiles)
+		}
 	}
-	var dirs = []string{"dir/"}
-	testutils.ZipFiles(files, dirs, &buffer)
+}
 
-	mapFiles := testutils.NewMapFiles()
-	Untar(&buffer, &mapFiles)
+func TestUntar(t *testing.T) {
+	files := []testutils.MockFile{
+		{Name: "dir/foo", Body: "hello"},
+	}
+	dirs := []string{"dir/"}
 
 	expected := testutils.CreateMapFiles(map[string]string{
 		"dir/foo": "hello",
 	}, []string{"dir/"})
 
-	if !reflect.DeepEqual(mapFiles, expected) {
-		t.Errorf("Untar failed: Wanted %s Got %s", expected, mapFiles)
-	}
+	t.Run("Single file in single directory", testUntarOfFiles(files, dirs, expected))
 }

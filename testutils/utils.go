@@ -11,7 +11,7 @@ type MockFile struct {
 	Name, Body string
 }
 
-func ZipFiles(files []MockFile, dirs []string, writer io.Writer) {
+func TarGzFiles(files []MockFile, dirs []string, writer io.Writer) {
 	gzipWriter := gzip.NewWriter(writer)
 	defer gzipWriter.Close()
 

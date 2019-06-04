@@ -2,7 +2,6 @@ package main
 
 import (
 	"bytes"
-	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"reflect"
@@ -18,7 +17,7 @@ func createServer() *httptest.Server {
 		{"dir/foo", "hello"},
 	}
 	var dirs = []string{"dir/"}
-	testutils.ZipFiles(files, dirs, &buffer)
+	testutils.TarGzFiles(files, dirs, &buffer)
 
 	return httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, request *http.Request) {
 		rw.Write(buffer.Bytes())
@@ -33,8 +32,6 @@ func TestFetchTarball(t *testing.T) {
 
 	mapFiles := testutils.NewMapFiles()
 	api.FetchTarball(server.URL, &mapFiles)
-
-	fmt.Println(mapFiles)
 
 	expected := testutils.CreateMapFiles(map[string]string{
 		"dir/foo": "hello",
