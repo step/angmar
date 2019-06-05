@@ -5,7 +5,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/step/durin/testutils"
+	"github.com/step/angmar/testutils"
 )
 
 func testUntarOfFiles(files []testutils.MockFile, dirs []string, expected testutils.MapFiles) func(t *testing.T) {

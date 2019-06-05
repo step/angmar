@@ -7,7 +7,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/step/durin/testutils"
+	"github.com/step/angmar/testutils"
 )
 
 func createServer() *httptest.Server {

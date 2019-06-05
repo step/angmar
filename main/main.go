@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/step/durin/tarutils"
+	"github.com/step/angmar/tarutils"
 )
 
 type GithubAPI struct {
