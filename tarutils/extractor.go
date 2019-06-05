@@ -35,13 +35,13 @@ func (extractor DefaultExtractor) ExtractFile(header tar.Header, reader io.Reade
 	defer func() {
 		err := file.Close()
 		if err != nil {
-			rerr = fmt.Errorf("Unable to close %s\n%s", fileName, err.Error())
+			rerr = fmt.Errorf("Unable to close %s\n%s\n%s", fileName, err.Error(), rerr)
 		}
 	}()
 
 	// Unable to open file
 	if ferr != nil {
-		return fmt.Errorf("Unable to open %s\n%s", header.Name, ferr.Error())
+		return FileOpenError{fileName, header.Name, header.Mode, ferr, "DefaultExtractor.ExtractFile"}
 	}
 
 	// Copy file
@@ -49,7 +49,7 @@ func (extractor DefaultExtractor) ExtractFile(header tar.Header, reader io.Reade
 
 	// Unable to copy file
 	if err != nil {
-		return fmt.Errorf("Unable to copy from %s to %s\nCopied %d bytes\n%s", header.Name, fileName, numBytesCopied, err.Error())
+		return FileCopyError{header.Name, fileName, numBytesCopied, err, "DefaultExtractor.ExtractFile"}
 	}
 
 	return nil
@@ -60,10 +60,9 @@ func (extractor DefaultExtractor) ExtractFile(header tar.Header, reader io.Reade
 func (extractor DefaultExtractor) ExtractDir(header tar.Header, reader io.Reader) (rerr error) {
 	// Create directory in src
 	dirName := filepath.Join(extractor.src, header.Name)
-	fmt.Println("creating...", dirName)
 	derr := os.MkdirAll(dirName, header.FileInfo().Mode())
 	if derr != nil {
-		return fmt.Errorf("Unable to create directory %s\n%s", dirName, derr.Error())
+		return MakeDirError{dirName, derr, "DefaultExtractor.ExtractDir"}
 	}
 
 	return nil

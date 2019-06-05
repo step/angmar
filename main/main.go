@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/step/angmar/gh"
@@ -11,5 +12,6 @@ func main() {
 	extractor := tarutils.NewDefaultExtractor("/tmp/angmar")
 	api := gh.GithubAPI{Client: http.DefaultClient}
 
-	api.FetchTarball("http://localhost:8003/boo.tar.gz", extractor)
+	err := api.FetchTarball("http://localhost:8003/bad.tar.gz", extractor)
+	fmt.Println(err)
 }

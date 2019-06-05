@@ -34,7 +34,7 @@ func testUntarOfFiles(files []testutils.MockFile, dirs []string, expected testut
 
 func TestUntar(t *testing.T) {
 	files := []testutils.MockFile{
-		{Name: "dir/foo", Body: "hello", Mode: 0777},
+		{Name: "dir/foo", Body: "hello", Mode: 0755},
 	}
 	dirs := []string{"dir/"}
 
@@ -51,8 +51,8 @@ func TestBadTar(t *testing.T) {
 	mapFiles := testutils.NewMapFiles()
 	err := Untar(&buffer, &mapFiles)
 
-	if err == nil {
-		t.Errorf("Not supposed to give a nil error! Half reader used!")
+	if actualErr, ok := err.(GzipReaderCreateError); !ok {
+		t.Errorf("Expected GzipReaderCreateError but got\n%s", actualErr)
 	}
 }
 
@@ -68,7 +68,7 @@ func tmpSrcDir(prefix string) string {
 
 func createDefaultTarGz(writer io.Writer) {
 	files := []testutils.MockFile{
-		{Name: "dir/foo", Body: "hello", Mode: 0777},
+		{Name: "dir/foo", Body: "hello", Mode: 0755},
 	}
 	dirs := []string{"dir/"}
 

@@ -3,7 +3,6 @@ package tarutils
 import (
 	"archive/tar"
 	"compress/gzip"
-	"fmt"
 	"io"
 )
 
@@ -15,30 +14,30 @@ func Untar(reader io.Reader, extractor Extractor) (rerr error) {
 	// first unzip and defer close
 	gzipReader, err := gzip.NewReader(reader)
 	if err != nil {
-		return fmt.Errorf("Unable to create gzip reader\n%s", err.Error())
+		return GzipReaderCreateError{err, "Untar"}
 	}
 
 	// trap the error in the defer
 	defer func() {
 		err := gzipReader.Close()
 		if err != nil {
-			rerr = err
+			rerr = GzipReaderCloseError{err, "Untar"}
 		}
 	}()
-
 	tarReader := tar.NewReader(gzipReader)
 
 	// For each header in the tar stream call the appropriate Extractor function
 	for header, err := tarReader.Next(); err != io.EOF; header, err = tarReader.Next() {
 		if err != nil {
-			return fmt.Errorf("Error reading the tar header\n%s", err.Error())
+			return TarHeaderError{err, "Untar"}
 		}
 		extract := extractor.ExtractFile
 		if header.FileInfo().IsDir() {
 			extract = extractor.ExtractDir
 		}
+
 		if err := extract(*header, tarReader); err != nil {
-			return fmt.Errorf("Error while extracting %s\n%s", header.Name, err.Error())
+			return ExtractionError{header.Name, header.Mode, err, "Untar"}
 		}
 	}
 
