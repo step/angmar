@@ -7,15 +7,6 @@ import (
 	"io"
 )
 
-// Extractor is an interface that can be used whenever one
-// wants to extract a file or a directory based on a tar header
-// It is left to the caller that calls the interface to decide
-// if the header is that of a file or a directory
-type Extractor interface {
-	ExtractFile(tar.Header, io.Reader) error
-	ExtractDir(tar.Header, io.Reader) error
-}
-
 // Untar expects a reader that provides a gzipped and tarred
 // stream and an extractor. It reads the given stream and
 // calls the extractor's ExtractFile or ExtractDir based

@@ -9,6 +9,7 @@ import (
 
 type MockFile struct {
 	Name, Body string
+	Mode       int64
 }
 
 func TarGzFiles(files []MockFile, dirs []string, writer io.Writer) {
@@ -18,20 +19,20 @@ func TarGzFiles(files []MockFile, dirs []string, writer io.Writer) {
 	tw := tar.NewWriter(gzipWriter)
 	defer tw.Close()
 
-	for _, file := range files {
-		tw.WriteHeader(&tar.Header{
-			Name: file.Name,
-			Mode: 0600,
-			Size: int64(len(file.Body)),
-		})
-		tw.Write([]byte(file.Body))
-	}
-
 	for _, dir := range dirs {
 		tw.WriteHeader(&tar.Header{
 			Name: dir,
-			Mode: 0600,
+			Mode: 0777,
 		})
+	}
+
+	for _, file := range files {
+		tw.WriteHeader(&tar.Header{
+			Name: file.Name,
+			Mode: file.Mode,
+			Size: int64(len(file.Body)),
+		})
+		tw.Write([]byte(file.Body))
 	}
 }
 

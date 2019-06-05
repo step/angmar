@@ -14,7 +14,7 @@ func createServer() *httptest.Server {
 	var buffer bytes.Buffer
 
 	var files = []testutils.MockFile{
-		{"dir/foo", "hello"},
+		{"dir/foo", "hello", 0777},
 	}
 	var dirs = []string{"dir/"}
 	testutils.TarGzFiles(files, dirs, &buffer)
