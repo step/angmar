@@ -9,7 +9,7 @@ import (
 
 func main() {
 	extractor := tarutils.NewDefaultExtractor("/tmp/angmar")
-	api := gh.GithubAPI{http.DefaultClient}
+	api := gh.GithubAPI{Client: http.DefaultClient}
 
 	api.FetchTarball("http://localhost:8003/boo.tar.gz", extractor)
 }
