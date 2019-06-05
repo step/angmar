@@ -1,4 +1,4 @@
-package main
+package gh_test
 
 import (
 	"bytes"
@@ -7,6 +7,7 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/step/angmar/gh"
 	"github.com/step/angmar/testutils"
 )
 
@@ -28,7 +29,7 @@ func TestFetchTarball(t *testing.T) {
 	server := createServer()
 	defer server.Close()
 
-	api := GithubAPI{server.Client()}
+	api := gh.GithubAPI{server.Client()}
 
 	mapFiles := testutils.NewMapFiles()
 	api.FetchTarball(server.URL, &mapFiles)
