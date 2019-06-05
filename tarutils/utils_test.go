@@ -2,6 +2,7 @@ package tarutils
 
 import (
 	"bytes"
+	"io"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -59,28 +60,34 @@ func formattedTime() string {
 	return time.Now().Format("02_01_06__03_04_05")
 }
 
-func TestDefaultExtractor(t *testing.T) {
-	// Verify contents of file
-	// Erase directory
+func tmpSrcDir(prefix string) string {
 	tmp := os.TempDir()
 	timeSuffix := formattedTime()
-	src := filepath.Join(tmp, "test"+timeSuffix)
+	return filepath.Join(tmp, prefix+timeSuffix)
+}
 
-	// Check if temp directory present
-	_, err := os.Stat(src)
-	if os.IsExist(err) {
-		t.Errorf("Directory already present: %s", src)
-	}
-
-	// Tar the following files and dirs
-	var buffer bytes.Buffer
-
+func createDefaultTarGz(writer io.Writer) {
 	files := []testutils.MockFile{
 		{Name: "dir/foo", Body: "hello", Mode: 0777},
 	}
 	dirs := []string{"dir/"}
 
-	testutils.TarGzFiles(files, dirs, &buffer)
+	testutils.TarGzFiles(files, dirs, writer)
+}
+
+func TestDefaultExtractor(t *testing.T) {
+	// name of temporary timestamp based src dir
+	src := tmpSrcDir("test")
+
+	// Check if temp directory present
+	_, err := os.Stat(src)
+	if err == nil {
+		t.Errorf("Directory already present: %s", src)
+	}
+
+	// Tar the following files and dirs
+	var buffer bytes.Buffer
+	createDefaultTarGz(&buffer)
 
 	// Untar the files that are tarred into buffer
 	extractor := NewDefaultExtractor(src)
