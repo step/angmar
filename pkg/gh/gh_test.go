@@ -8,8 +8,8 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/step/angmar/gh"
-	"github.com/step/angmar/testutils"
+	"github.com/step/angmar/pkg/gh"
+	"github.com/step/angmar/pkg/testutils"
 )
 
 func createServer() *httptest.Server {

@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/step/angmar/gh"
-	"github.com/step/angmar/tarutils"
+	"github.com/step/angmar/pkg/gh"
+	"github.com/step/angmar/pkg/tarutils"
 )
 
 func main() {

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/step/angmar/tarutils"
+	"github.com/step/angmar/pkg/tarutils"
 )
 
 type HttpClient interface {

@@ -10,7 +10,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/step/angmar/testutils"
+	"github.com/step/angmar/pkg/testutils"
 )
 
 func testUntarOfFiles(files []testutils.MockFile, dirs []string, expected testutils.MapFiles) func(t *testing.T) {
