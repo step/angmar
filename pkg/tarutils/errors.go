@@ -2,33 +2,51 @@ package tarutils
 
 import "fmt"
 
+// GzipReaderCreateError is typically returned when gzip.NewReader() returns
+// an error. The location is simply a string that helps you identify where
+// the error occcurred. Usually a function name.
 type GzipReaderCreateError struct {
 	actualErr error
 	location  string
 }
 
+// Error returns a string that reports the location and the original error
 func (g GzipReaderCreateError) Error() string {
 	return fmt.Sprintf("Unable to create gzip reader at %s\n%s", g.location, g.actualErr.Error())
 }
 
+// GzipReaderCloseError is typically returned when a gzip.Reader.Close() returns
+// an error. The location is simply a string that helps you identify where
+// the error occcurred. Usually a function name.
 type GzipReaderCloseError struct {
 	actualErr error
 	location  string
 }
 
+// Error returns a string that reports the location and the original error
 func (g GzipReaderCloseError) Error() string {
 	return fmt.Sprintf("Unable to close gzip reader at %s\n%s", g.location, g.actualErr.Error())
 }
 
+// TarHeaderError is typically returned when tar.Header.Next() returns an error.
+// The location is simply a string that helps you identify where
+// the error occcurred. Usually a function name.
 type TarHeaderError struct {
 	actualErr error
 	location  string
 }
 
+// Error returns a string that reports the location and the original error
 func (t TarHeaderError) Error() string {
 	return fmt.Sprintf("Unable to read tar header %s\n%s", t.location, t.actualErr.Error())
 }
 
+// ExtractionError is returned when Extractor.ExtractFile returns an error
+// Typically this error wraps one or more errors that might have occurred
+// while either untarring the file or writing it. It accepts a file name
+// the permission mode, the original error returned and a location. The
+// location is simply a string that helps you identify where the error
+// occurreed. Usually a function name.
 type ExtractionError struct {
 	name      string
 	mode      int64
@@ -36,10 +54,18 @@ type ExtractionError struct {
 	location  string
 }
 
+// Error returns a string that reports the name from the tar header, the mode, the
+// original error returned and a location. The location is simply a string that helps you
+// identify where the error occurred. Usually a function name.
 func (e ExtractionError) Error() string {
 	return fmt.Sprintf("Unable to extract %s [%o] at %s\n%s", e.name, e.mode, e.location, e.actualErr.Error())
 }
 
+// FileOpenError is typically returned when os.OpenFile returns an error
+// It accepts a file name that includes the absolute path, the file name
+// without the leading path, the permission mode, the original error returned
+// and a location. The location is simply a string that helps you identify where
+// the error occurreed. Usually a function name.
 type FileOpenError struct {
 	fileName  string
 	name      string
@@ -48,11 +74,21 @@ type FileOpenError struct {
 	location  string
 }
 
+// Error returns a string that reports the absolute name of the file, the relative name ,
+// the mode, the original error returned and a location. The location is simply a string
+// that helps you identify where the error occurred. Usually a function name.
 func (f FileOpenError) Error() string {
 	return fmt.Sprintf("Unable to open %s(%s) [%o] at %s\n%s",
 		f.fileName, f.name, f.mode, f.location, f.actualErr.Error())
 }
 
+// FileCopyError is typically returned when os.Copy returns an error
+// The error needs to be named something better however since it is an error
+// that relates to io.Writer and io.Reader and has nothing to do with ifiles
+// It accepts a src, a dest being copied to, the number of bytes written as a part
+// of copy and the error so far, the original error returned and a location.
+// The location is simply a string that helps you identify where
+// the error occurreed. Usually a function name.
 type FileCopyError struct {
 	src         string
 	dest        string
@@ -61,11 +97,20 @@ type FileCopyError struct {
 	location    string
 }
 
+// Error returns a string that reports the src and destination being copied between
+// the number of bytes that were copied, the original error returned and a location.
+// The location is simply a string that helps you identify where the error occurred.
+// Usually a function name.
 func (f FileCopyError) Error() string {
 	return fmt.Sprintf("Unable to copy from %s to %s\nCopied %d bytes at %s\n%s",
 		f.src, f.dest, f.bytesCopied, f.location, f.actualErr.Error())
 }
 
+// FileCloseError is typically returned when file.Close() returns an error.
+// Since file.Close() is often called in a defer block, two errors are provided
+// actualErrr is the error that occurred while closing the file and pastErrors
+// are errors that might have happened while opening a file for instance.
+// The location is simply a string that helps you identify where the error occurred.
 type FileCloseError struct {
 	fileName   string
 	actualErr  error
@@ -73,6 +118,9 @@ type FileCloseError struct {
 	location   string
 }
 
+// Error returns a string that reports the file that returned an error while
+// closing. If pastErrors were included it reports that as well along with
+// the location
 func (c FileCloseError) Error() string {
 	pastErrorsStr := ""
 	if c.pastErrors != nil {
@@ -81,12 +129,18 @@ func (c FileCloseError) Error() string {
 	return fmt.Sprintf("Unable to close %s at %s\n%s\n%s", c.fileName, c.location, c.actualErr, pastErrorsStr)
 }
 
+// MakeDirError is typically returned when os.MakeDir is called. The directory
+// name and actual error which os.MakeDir returns are expected. The location
+// is simply a string that helps you identify where the error occurred.
+// Usually a function name.
 type MakeDirError struct {
 	dirName   string
 	actualErr error
 	location  string
 }
 
+// Error returns a string that reports which directory reported an error while
+// creating it along with the actual error returned from os.MakeDir
 func (d MakeDirError) Error() string {
 	return fmt.Sprintf("Unable to make directory %s at %s\n%s", d.dirName, d.location, d.actualErr.Error())
 }
