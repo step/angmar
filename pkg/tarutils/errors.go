@@ -66,6 +66,21 @@ func (f FileCopyError) Error() string {
 		f.src, f.dest, f.bytesCopied, f.location, f.actualErr.Error())
 }
 
+type FileCloseError struct {
+	fileName   string
+	actualErr  error
+	pastErrors error
+	location   string
+}
+
+func (c FileCloseError) Error() string {
+	pastErrorsStr := ""
+	if c.pastErrors != nil {
+		pastErrorsStr = c.pastErrors.Error()
+	}
+	return fmt.Sprintf("Unable to close %s at %s\n%s\n%s", c.fileName, c.location, c.actualErr, pastErrorsStr)
+}
+
 type MakeDirError struct {
 	dirName   string
 	actualErr error
