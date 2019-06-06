@@ -2,6 +2,13 @@ package tarutils
 
 import "fmt"
 
+func actualErrStr(err error) string {
+	if err == nil {
+		return ""
+	}
+	return err.Error()
+}
+
 // GzipReaderCreateError is typically returned when gzip.NewReader() returns
 // an error. The location is simply a string that helps you identify where
 // the error occcurred. Usually a function name.
@@ -12,7 +19,7 @@ type GzipReaderCreateError struct {
 
 // Error returns a string that reports the location and the original error
 func (g GzipReaderCreateError) Error() string {
-	return fmt.Sprintf("Unable to create gzip reader at %s\n%s", g.location, g.actualErr.Error())
+	return fmt.Sprintf("Unable to create gzip reader at %s\n%s", g.location, actualErrStr(g.actualErr))
 }
 
 // GzipReaderCloseError is typically returned when a gzip.Reader.Close() returns
@@ -25,7 +32,7 @@ type GzipReaderCloseError struct {
 
 // Error returns a string that reports the location and the original error
 func (g GzipReaderCloseError) Error() string {
-	return fmt.Sprintf("Unable to close gzip reader at %s\n%s", g.location, g.actualErr.Error())
+	return fmt.Sprintf("Unable to close gzip reader at %s\n%s", g.location, actualErrStr(g.actualErr))
 }
 
 // TarHeaderError is typically returned when tar.Header.Next() returns an error.
@@ -38,7 +45,7 @@ type TarHeaderError struct {
 
 // Error returns a string that reports the location and the original error
 func (t TarHeaderError) Error() string {
-	return fmt.Sprintf("Unable to read tar header %s\n%s", t.location, t.actualErr.Error())
+	return fmt.Sprintf("Unable to read tar header %s\n%s", t.location, actualErrStr(t.actualErr))
 }
 
 // ExtractionError is returned when Extractor.ExtractFile returns an error
@@ -58,7 +65,7 @@ type ExtractionError struct {
 // original error returned and a location. The location is simply a string that helps you
 // identify where the error occurred. Usually a function name.
 func (e ExtractionError) Error() string {
-	return fmt.Sprintf("Unable to extract %s [%o] at %s\n%s", e.name, e.mode, e.location, e.actualErr.Error())
+	return fmt.Sprintf("Unable to extract %s [%o] at %s\n%s", e.name, e.mode, e.location, actualErrStr(e.actualErr))
 }
 
 // FileOpenError is typically returned when os.OpenFile returns an error
@@ -79,7 +86,7 @@ type FileOpenError struct {
 // that helps you identify where the error occurred. Usually a function name.
 func (f FileOpenError) Error() string {
 	return fmt.Sprintf("Unable to open %s(%s) [%o] at %s\n%s",
-		f.fileName, f.name, f.mode, f.location, f.actualErr.Error())
+		f.fileName, f.name, f.mode, f.location, actualErrStr(f.actualErr))
 }
 
 // FileCopyError is typically returned when os.Copy returns an error
@@ -103,7 +110,7 @@ type FileCopyError struct {
 // Usually a function name.
 func (f FileCopyError) Error() string {
 	return fmt.Sprintf("Unable to copy from %s to %s\nCopied %d bytes at %s\n%s",
-		f.src, f.dest, f.bytesCopied, f.location, f.actualErr.Error())
+		f.src, f.dest, f.bytesCopied, f.location, actualErrStr(f.actualErr))
 }
 
 // FileCloseError is typically returned when file.Close() returns an error.
@@ -126,7 +133,7 @@ func (c FileCloseError) Error() string {
 	if c.pastErrors != nil {
 		pastErrorsStr = c.pastErrors.Error()
 	}
-	return fmt.Sprintf("Unable to close %s at %s\n%s\n%s", c.fileName, c.location, c.actualErr, pastErrorsStr)
+	return fmt.Sprintf("Unable to close %s at %s\n%s\n%s", c.fileName, c.location, actualErrStr(c.actualErr), pastErrorsStr)
 }
 
 // MakeDirError is typically returned when os.MakeDir is called. The directory
@@ -142,5 +149,5 @@ type MakeDirError struct {
 // Error returns a string that reports which directory reported an error while
 // creating it along with the actual error returned from os.MakeDir
 func (d MakeDirError) Error() string {
-	return fmt.Sprintf("Unable to make directory %s at %s\n%s", d.dirName, d.location, d.actualErr.Error())
+	return fmt.Sprintf("Unable to make directory %s at %s\n%s", d.dirName, d.location, actualErrStr(d.actualErr))
 }
