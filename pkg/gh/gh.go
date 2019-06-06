@@ -1,7 +1,6 @@
 package gh
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/step/angmar/pkg/tarutils"
@@ -22,18 +21,20 @@ type GithubAPI struct {
 // It assumes that the tarball is gzipped and hands the response contents
 // to tarutils.Untar and is extracted by the tarutils.Extractor provided
 func (api *GithubAPI) FetchTarball(url string, extractor tarutils.Extractor) error {
+	location := "FetchTarball"
 	resp, err := api.Client.Get(url)
 
 	if err != nil {
-		return fmt.Errorf("Unable to fetch %s\n%s", url, err.Error())
+		return ClientFetchError{url, "GET", err, location}
 	}
 
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		return fmt.Errorf("Non 2xx response for %s", url)
+		return StatusCodeError{resp.StatusCode, url, "GET", location}
 	}
 
 	if err = tarutils.Untar(resp.Body, extractor); err != nil {
-		return fmt.Errorf("Unable to untar while fetching %s\n%s", url, err.Error())
+		return FetchUntarError{url, err, location}
+		// return fmt.Errorf("Unable to untar while fetching %s\n%s", url, err.Error())
 	}
 
 	return nil

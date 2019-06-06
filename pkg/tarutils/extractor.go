@@ -57,12 +57,12 @@ func (extractor DefaultExtractor) ExtractFile(header tar.Header, reader io.Reade
 
 // DefaultExtractor.ExtractDir extracts the given dir under src specified
 // in DefaultExtractor
-func (extractor DefaultExtractor) ExtractDir(header tar.Header, reader io.Reader) (rerr error) {
+func (extractor DefaultExtractor) ExtractDir(header tar.Header, reader io.Reader) error {
 	// Create directory in src
 	dirName := filepath.Join(extractor.src, header.Name)
-	derr := os.MkdirAll(dirName, header.FileInfo().Mode())
-	if derr != nil {
-		return MakeDirError{dirName, derr, "DefaultExtractor.ExtractDir"}
+	err := os.MkdirAll(dirName, header.FileInfo().Mode())
+	if err != nil {
+		return MakeDirError{dirName, err, "DefaultExtractor.ExtractDir"}
 	}
 
 	return nil
