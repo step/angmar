@@ -27,6 +27,9 @@ type DefaultExtractor struct {
 // in DefaultExtractor
 func (extractor DefaultExtractor) ExtractFile(header tar.Header, reader io.Reader) (rerr error) {
 	// Open file and defer file.Close()
+	if header.Name == "pax_global_header" {
+		return nil
+	}
 	location := "DefaultExtractor.ExtractFile"
 	fileName := filepath.Join(extractor.src, header.Name)
 	file, ferr := os.OpenFile(fileName, os.O_CREATE|os.O_RDWR, header.FileInfo().Mode())

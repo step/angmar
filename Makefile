@@ -2,4 +2,4 @@ PKGS := $(shell go  list ./... | grep -v /vendor)
 
 .PHONY: test
 test:
-	go test $(PKGS)
+	go test -cover $(PKGS)

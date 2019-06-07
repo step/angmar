@@ -69,6 +69,7 @@ func tmpSrcDir(prefix string) string {
 func createDefaultTarGz(writer io.Writer) {
 	files := []testutils.MockFile{
 		{Name: "dir/foo", Body: "hello", Mode: 0755},
+		{Name: "pax_global_header", Body: "", Mode: 0000},
 	}
 	dirs := []string{"dir/"}
 
@@ -111,6 +112,12 @@ func TestDefaultExtractor(t *testing.T) {
 
 	if string(contents) != "hello" {
 		t.Errorf("contents of file incorrect. Expected hello, got %s", contents)
+	}
+
+	// Verify no pax_global_header
+	paxGlobalHeader := filepath.Join(src, "pax_global_header")
+	if _, err := os.Stat(paxGlobalHeader); err == nil {
+		t.Errorf("pax_global_header created!")
 	}
 
 	err = os.RemoveAll(src)
