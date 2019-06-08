@@ -1,34 +1,16 @@
 package angmar_test
 
 import (
-	"fmt"
 	"reflect"
 	"testing"
+
+	"github.com/step/angmar/pkg/queueclient"
 
 	a "github.com/step/angmar/pkg/angmar"
 	"github.com/step/angmar/pkg/gh"
 	"github.com/step/angmar/pkg/tarutils"
 	"github.com/step/angmar/pkg/testutils"
 )
-
-type inMemoryQueue struct {
-	queues map[string][]string
-}
-
-func (q inMemoryQueue) Enqueue(name, value string) error {
-	q.queues[name] = append(q.queues[name], value)
-	return nil
-}
-
-func (q inMemoryQueue) Dequeue(name string) (string, error) {
-	queue := q.queues[name]
-	if len(queue) == 0 {
-		return "", fmt.Errorf("queue length is 0")
-	}
-	value := queue[len(queue)-1]
-	q.queues[name] = queue[:len(queue)-1]
-	return value, nil
-}
 
 type DefaultExtractorGenerator struct {
 	mapFiles *testutils.MapFiles
@@ -40,8 +22,7 @@ func (d *DefaultExtractorGenerator) Generate(args ...string) tarutils.Extractor 
 }
 
 func TestAngmar(t *testing.T) {
-	queues := make(map[string][]string)
-	queueClient := inMemoryQueue{queues}
+	queueClient := queueclient.NewDefaultClient()
 	generator := DefaultExtractorGenerator{}
 
 	server, archiveServer := testutils.CreateServer()
