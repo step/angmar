@@ -16,6 +16,12 @@ type Extractor interface {
 	ExtractDir(tar.Header, io.Reader) error
 }
 
+// ExtractorGenerator is an interface that is used to generate
+// an extractor
+type ExtractorGenerator interface {
+	Generate(...string) Extractor
+}
+
 // DefaultExtractor is a struct implementing the Extractor interface.
 // It has a src field that indicates the base path where one wants to
 // extract files and directories to.
@@ -72,6 +78,6 @@ func (extractor DefaultExtractor) ExtractDir(header tar.Header, reader io.Reader
 }
 
 // NewDefaultExtractor creates an instance of DefaultExtractor with the specified src
-func NewDefaultExtractor(src string) DefaultExtractor {
+func NewDefaultExtractor(src string) Extractor {
 	return DefaultExtractor{src}
 }

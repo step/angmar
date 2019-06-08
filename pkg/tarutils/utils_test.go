@@ -13,7 +13,7 @@ import (
 	"github.com/step/angmar/pkg/testutils"
 )
 
-func testUntarOfFiles(files []testutils.MockFile, dirs []string, expected testutils.MapFiles) func(t *testing.T) {
+func testUntarOfFiles(files []testutils.MockFile, dirs []string, expected *testutils.MapFiles) func(t *testing.T) {
 	return func(t *testing.T) {
 		var buffer bytes.Buffer
 
@@ -26,8 +26,8 @@ func testUntarOfFiles(files []testutils.MockFile, dirs []string, expected testut
 			t.Errorf("Unexpected error: %s\n", err.Error())
 		}
 
-		if !reflect.DeepEqual(mapFiles, expected) {
-			t.Errorf("Untar failed: Wanted %s Got %s", expected, mapFiles)
+		if !reflect.DeepEqual(&mapFiles, expected) {
+			t.Errorf("Untar failed: Wanted %s Got %s", expected, &mapFiles)
 		}
 	}
 }

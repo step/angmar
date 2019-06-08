@@ -1,7 +1,6 @@
 package gh_test
 
 import (
-	"bytes"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -13,45 +12,7 @@ import (
 )
 
 func createServer() (*httptest.Server, *httptest.Server) {
-	var buffer bytes.Buffer
-
-	var files = []testutils.MockFile{
-		{Name: "dir/foo", Body: "hello", Mode: 0777},
-	}
-	var dirs = []string{"dir/"}
-	testutils.TarGzFiles(files, dirs, &buffer)
-
-	archiveServer := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, request *http.Request) {
-		rw.Write(buffer.Bytes())
-	}))
-
-	ghProxy := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, request *http.Request) {
-		if request.URL.String() == "/404" {
-			rw.WriteHeader(404)
-			if _, err := rw.Write([]byte("")); err != nil {
-				fmt.Println("Unable to write empty byte!!!")
-			}
-			return
-		}
-
-		if request.URL.String() == "/archive" {
-			rw.Header().Set("Location", archiveServer.URL)
-			rw.WriteHeader(302)
-		}
-
-		if request.URL.String() == "/badtar" {
-			if _, err := rw.Write([]byte("")); err != nil {
-				fmt.Println("Unable to write empty byte!!!")
-			}
-			return
-		}
-
-		numOfBytesWritten, err := rw.Write(buffer.Bytes())
-		if err != nil {
-			fmt.Printf("Something went wrong while responding!\nWritten %d bytes\n%s", numOfBytesWritten, err.Error())
-		}
-	}))
-	return ghProxy, archiveServer
+	return testutils.CreateServer()
 }
 
 func TestFetchTarball(t *testing.T) {
@@ -69,8 +30,8 @@ func TestFetchTarball(t *testing.T) {
 		"dir/foo": "hello",
 	}, []string{"dir/"})
 
-	if !reflect.DeepEqual(mapFiles, expected) {
-		t.Errorf("Wanted %s Got %s", expected, mapFiles)
+	if !reflect.DeepEqual(&mapFiles, expected) {
+		t.Errorf("Wanted %s Got %s", expected, &mapFiles)
 	}
 }
 
@@ -146,7 +107,7 @@ func TestFetchTarballWithRedirect(t *testing.T) {
 		"dir/foo": "hello",
 	}, []string{"dir/"})
 
-	if !reflect.DeepEqual(mapFiles, expected) {
-		t.Errorf("Wanted %s Got %s", expected, mapFiles)
+	if !reflect.DeepEqual(&mapFiles, expected) {
+		t.Errorf("Wanted %s Got %s", expected, &mapFiles)
 	}
 }

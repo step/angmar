@@ -2,9 +2,13 @@ package testutils
 
 import (
 	"archive/tar"
+	"bytes"
 	"compress/gzip"
+	"fmt"
 	"io"
 	"io/ioutil"
+	"net/http"
+	"net/http/httptest"
 )
 
 type MockFile struct {
@@ -56,6 +60,50 @@ func NewMapFiles() MapFiles {
 	return MapFiles{map[string]string{}, []string{}}
 }
 
-func CreateMapFiles(filesAndContents map[string]string, dirs []string) MapFiles {
-	return MapFiles{filesAndContents, dirs}
+func CreateMapFiles(filesAndContents map[string]string, dirs []string) *MapFiles {
+	m := &MapFiles{filesAndContents, dirs}
+	return m
+}
+
+func CreateServer() (*httptest.Server, *httptest.Server) {
+	var buffer bytes.Buffer
+
+	var files = []MockFile{
+		{Name: "dir/foo", Body: "hello", Mode: 0777},
+	}
+	var dirs = []string{"dir/"}
+	TarGzFiles(files, dirs, &buffer)
+
+	archiveServer := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, request *http.Request) {
+		rw.Write(buffer.Bytes())
+	}))
+
+	ghProxy := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, request *http.Request) {
+		// fmt.Println("request is", request)
+		if request.URL.String() == "/404" {
+			rw.WriteHeader(404)
+			if _, err := rw.Write([]byte("")); err != nil {
+				fmt.Println("Unable to write empty byte!!!")
+			}
+			return
+		}
+
+		if request.URL.String() == "/archive" {
+			rw.Header().Set("Location", archiveServer.URL)
+			rw.WriteHeader(302)
+		}
+
+		if request.URL.String() == "/badtar" {
+			if _, err := rw.Write([]byte("")); err != nil {
+				fmt.Println("Unable to write empty byte!!!")
+			}
+			return
+		}
+
+		numOfBytesWritten, err := rw.Write(buffer.Bytes())
+		if err != nil {
+			fmt.Printf("Something went wrong while responding!\nWritten %d bytes\n%s", numOfBytesWritten, err.Error())
+		}
+	}))
+	return ghProxy, archiveServer
 }
