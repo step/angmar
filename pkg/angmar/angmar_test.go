@@ -1,6 +1,7 @@
 package angmar_test
 
 import (
+	"encoding/json"
 	"reflect"
 	"testing"
 
@@ -27,13 +28,19 @@ func TestAngmar(t *testing.T) {
 
 	server, archiveServer := testutils.CreateServer()
 	defer archiveServer.Close()
-	apiClient := gh.GithubAPI{server.Client()}
+	apiClient := gh.GithubAPI{Client: server.Client()}
 
-	angmar := a.Angmar{queueClient, &generator, apiClient}
-
-	queueClient.Enqueue("queue", server.URL)
+	angmar := a.Angmar{QueueClient: queueClient, Generator: &generator, ApiClient: apiClient}
 	responseCh := make(chan bool)
 	stopCh := make(chan bool)
+
+	message := a.AngmarMessage{Url: server.URL, SHA: "0abcdef1234", Pusher: "me"}
+	jsonMessage, _ := json.Marshal(message)
+
+	if err := queueClient.Enqueue("queue", string(jsonMessage)); err != nil {
+		t.Errorf("Unexpected error while queuing %s in memory", jsonMessage)
+	}
+
 	go func() {
 		angmar.Start("queue", responseCh, stopCh)
 	}()

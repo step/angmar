@@ -2,6 +2,7 @@ package main
 
 import (
 	"net/http"
+	"path/filepath"
 	"time"
 
 	"github.com/step/angmar/pkg/angmar"
@@ -22,7 +23,14 @@ func (r RedisClient) Enqueue(name, value string) error {
 func (r RedisClient) Dequeue(name string) (string, error) {
 	resp := r.actualClient.BRPop(time.Minute, name)
 	values, err := resp.Result()
+	if err != nil {
+		return "", err
+	}
 	return values[1], err
+}
+
+func (r RedisClient) SwitchQueue(src, dest string) (string, error) {
+	return "", nil
 }
 
 type DefaultExtractorGenerator struct {
@@ -30,7 +38,8 @@ type DefaultExtractorGenerator struct {
 }
 
 func (d DefaultExtractorGenerator) Generate(args ...string) tarutils.Extractor {
-	return tarutils.NewDefaultExtractor(d.src)
+	dir := filepath.Join(d.src, args[0], args[1])
+	return tarutils.NewDefaultExtractor(dir)
 }
 
 func main() {
@@ -43,14 +52,12 @@ func main() {
 	generator := DefaultExtractorGenerator{"/tmp/angmar"}
 
 	a := angmar.Angmar{queueClient, generator, gh.GithubAPI{http.DefaultClient}}
-	r := make(chan bool)
+	r := make(chan bool, 4)
 	stop := make(chan bool)
 	go func() {
 		a.Start("my_queue", r, stop)
 	}()
-	<-r
-	<-r
-	stop <- true
 	for {
+		time.Sleep(time.Microsecond * 100)
 	}
 }

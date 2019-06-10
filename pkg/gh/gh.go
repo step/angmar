@@ -34,7 +34,6 @@ func (api *GithubAPI) FetchTarball(url string, extractor tarutils.Extractor) err
 
 	if err = tarutils.Untar(resp.Body, extractor); err != nil {
 		return FetchUntarError{url, err, location}
-		// return fmt.Errorf("Unable to untar while fetching %s\n%s", url, err.Error())
 	}
 
 	return nil

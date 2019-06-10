@@ -1,7 +1,7 @@
 package angmar
 
 import (
-	"fmt"
+	"encoding/json"
 
 	"github.com/step/angmar/pkg/gh"
 	"github.com/step/angmar/pkg/queueclient"
@@ -12,6 +12,12 @@ type Angmar struct {
 	QueueClient queueclient.QueueClient
 	Generator   tarutils.ExtractorGenerator
 	ApiClient   gh.GithubAPI
+}
+
+type AngmarMessage struct {
+	Url    string
+	SHA    string
+	Pusher string
 }
 
 func (a Angmar) Start(qName string, r chan<- bool, stop <-chan bool) {
@@ -28,9 +34,17 @@ func (a Angmar) Start(qName string, r chan<- bool, stop <-chan bool) {
 		if err != nil {
 			continue
 		}
-		extractor := a.Generator.Generate("")
-		err = a.ApiClient.FetchTarball(val, extractor)
-		fmt.Println(err)
+
+		var message AngmarMessage
+		err = json.Unmarshal([]byte(val), &message)
+		if err != nil {
+			continue
+		}
+		extractor := a.Generator.Generate(message.Pusher, message.SHA)
+		err = a.ApiClient.FetchTarball(message.Url, extractor)
+		if err != nil {
+			continue
+		}
 		r <- true
 	}
 }

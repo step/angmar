@@ -16,7 +16,7 @@ type inMemoryQueue struct {
 // Enqueue places the given value on the queue specified
 // by name. No error is returned since the value is placed
 // in memory
-func (q inMemoryQueue) Enqueue(name, value string) error {
+func (q *inMemoryQueue) Enqueue(name, value string) error {
 	q.mux.Lock()
 	defer q.mux.Unlock()
 	q.queues[name] = append(q.queues[name], value)
@@ -26,7 +26,7 @@ func (q inMemoryQueue) Enqueue(name, value string) error {
 // Dequeue pops a value from the queue specified by name
 // An error is returned if Dequeue is attempted on an
 // empty queue.
-func (q inMemoryQueue) Dequeue(name string) (string, error) {
+func (q *inMemoryQueue) Dequeue(name string) (string, error) {
 	queue := q.queues[name]
 	q.mux.Lock()
 	defer q.mux.Unlock()
@@ -41,7 +41,7 @@ func (q inMemoryQueue) Dequeue(name string) (string, error) {
 // SwitchQueue pops a value from src and pushes it to destination
 // and returns the value and/or a potential error. It is similar
 // to BRPOPLPUSH
-func (q inMemoryQueue) SwitchQueue(src, dest string) (string, error) {
+func (q *inMemoryQueue) SwitchQueue(src, dest string) (string, error) {
 	q.mux.Lock()
 	defer q.mux.Unlock()
 	queue := q.queues[src]
@@ -56,5 +56,5 @@ func (q inMemoryQueue) SwitchQueue(src, dest string) (string, error) {
 
 // NewDefaultClient provides an in memory implementation of a queue
 func NewDefaultClient() QueueClient {
-	return inMemoryQueue{queues: make(map[string][]string)}
+	return &inMemoryQueue{queues: make(map[string][]string)}
 }

@@ -2,4 +2,4 @@
 
 package tarutils
 
-func debug(fmt string, args ...interface{}) {}
+func Debug(fmt string, args ...interface{}) {}
