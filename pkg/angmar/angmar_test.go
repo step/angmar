@@ -30,7 +30,7 @@ func TestAngmar(t *testing.T) {
 	defer archiveServer.Close()
 	apiClient := gh.GithubAPI{Client: server.Client()}
 
-	angmar := a.Angmar{QueueClient: queueClient, Generator: &generator, ApiClient: apiClient}
+	angmar := a.Angmar{QueueClient: queueClient, Generator: &generator, DownloadClient: apiClient}
 	responseCh := make(chan bool)
 	stopCh := make(chan bool)
 

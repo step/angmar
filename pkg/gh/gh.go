@@ -38,3 +38,7 @@ func (api *GithubAPI) FetchTarball(url string, extractor tarutils.Extractor) err
 
 	return nil
 }
+
+func (api GithubAPI) Download(url string, extractor tarutils.Extractor) error {
+	return api.FetchTarball(url, extractor)
+}
