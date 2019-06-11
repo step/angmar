@@ -17,6 +17,7 @@ type RedisClient struct {
 }
 
 func (r RedisClient) Enqueue(name, value string) error {
+	r.actualClient.LPush(name, value)
 	return nil
 }
 
@@ -52,12 +53,7 @@ func main() {
 	generator := DefaultExtractorGenerator{"/tmp/angmar"}
 
 	a := angmar.Angmar{queueClient, generator, gh.GithubAPI{http.DefaultClient}}
-	r := make(chan bool, 4)
+	r := make(chan bool, 100)
 	stop := make(chan bool)
-	go func() {
-		a.Start("my_queue", r, stop)
-	}()
-	for {
-		time.Sleep(time.Microsecond * 100)
-	}
+	a.Start("my_queue", r, stop)
 }

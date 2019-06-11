@@ -2,6 +2,7 @@ package angmar_test
 
 import (
 	"encoding/json"
+	"path/filepath"
 	"reflect"
 	"testing"
 
@@ -18,7 +19,8 @@ type DefaultExtractorGenerator struct {
 }
 
 func (d *DefaultExtractorGenerator) Generate(args ...string) tarutils.Extractor {
-	d.mapFiles = testutils.CreateMapFiles(map[string]string{}, []string{})
+	basePath := filepath.Join(args[0], args[1])
+	d.mapFiles = testutils.CreateMapFiles(map[string]string{}, []string{}, basePath)
 	return d.mapFiles
 }
 
@@ -34,7 +36,7 @@ func TestAngmar(t *testing.T) {
 	responseCh := make(chan bool)
 	stopCh := make(chan bool)
 
-	message := a.AngmarMessage{Url: server.URL, SHA: "0abcdef1234", Pusher: "me"}
+	message := a.AngmarMessage{Url: server.URL, SHA: "0abcdef1234", Pusher: "me", Tasks: []string{"test", "lint"}}
 	jsonMessage, _ := json.Marshal(message)
 
 	if err := queueClient.Enqueue("queue", string(jsonMessage)); err != nil {
@@ -52,9 +54,20 @@ func TestAngmar(t *testing.T) {
 
 	expected := testutils.CreateMapFiles(map[string]string{
 		"dir/foo": "hello",
-	}, []string{"dir/"})
+	}, []string{"dir/"}, "me/0abcdef1234")
 
 	if !reflect.DeepEqual(generator.mapFiles, expected) {
 		t.Errorf("Untar failed: Wanted %s Got %s", expected, generator.mapFiles)
+	}
+
+	for _, q := range []string{"test", "lint"} {
+		val, err := queueClient.Dequeue(q)
+		if err != nil {
+			t.Errorf("Unexpected error while dequeuing from test")
+		}
+
+		if val != "me/0abcdef1234" {
+			t.Errorf("Expected %s, got %s while testing downstream queue", "me/0abcdef1234", val)
+		}
 	}
 }

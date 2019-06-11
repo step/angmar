@@ -41,8 +41,9 @@ func TarGzFiles(files []MockFile, dirs []string, writer io.Writer) {
 }
 
 type MapFiles struct {
-	files map[string]string
-	dirs  []string
+	files    map[string]string
+	dirs     []string
+	basePath string
 }
 
 func (mapFiles *MapFiles) ExtractFile(header tar.Header, reader io.Reader) error {
@@ -56,12 +57,16 @@ func (mapFiles *MapFiles) ExtractDir(header tar.Header, reader io.Reader) error 
 	return nil
 }
 
-func NewMapFiles() MapFiles {
-	return MapFiles{map[string]string{}, []string{}}
+func (mapFiles *MapFiles) GetBasePath() string {
+	return mapFiles.basePath
 }
 
-func CreateMapFiles(filesAndContents map[string]string, dirs []string) *MapFiles {
-	m := &MapFiles{filesAndContents, dirs}
+func NewMapFiles() MapFiles {
+	return MapFiles{map[string]string{}, []string{}, ""}
+}
+
+func CreateMapFiles(filesAndContents map[string]string, dirs []string, basePath string) *MapFiles {
+	m := &MapFiles{filesAndContents, dirs, basePath}
 	return m
 }
 
@@ -79,7 +84,6 @@ func CreateServer() (*httptest.Server, *httptest.Server) {
 	}))
 
 	ghProxy := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, request *http.Request) {
-		// fmt.Println("request is", request)
 		if request.URL.String() == "/404" {
 			rw.WriteHeader(404)
 			if _, err := rw.Write([]byte("")); err != nil {

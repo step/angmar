@@ -28,7 +28,7 @@ func TestFetchTarball(t *testing.T) {
 	}
 	expected := testutils.CreateMapFiles(map[string]string{
 		"dir/foo": "hello",
-	}, []string{"dir/"})
+	}, []string{"dir/"}, "")
 
 	if !reflect.DeepEqual(&mapFiles, expected) {
 		t.Errorf("Wanted %s Got %s", expected, &mapFiles)
@@ -92,10 +92,6 @@ func TestFetchTarballWithRedirect(t *testing.T) {
 	defer archiveServer.Close()
 
 	client := server.Client()
-	client.CheckRedirect = func(req *http.Request, via []*http.Request) error {
-		fmt.Printf("Redirecting.......%s to %s", via[0].URL, req.URL)
-		return nil
-	}
 	api := gh.GithubAPI{Client: client}
 
 	mapFiles := testutils.NewMapFiles()
@@ -105,7 +101,7 @@ func TestFetchTarballWithRedirect(t *testing.T) {
 
 	expected := testutils.CreateMapFiles(map[string]string{
 		"dir/foo": "hello",
-	}, []string{"dir/"})
+	}, []string{"dir/"}, "")
 
 	if !reflect.DeepEqual(&mapFiles, expected) {
 		t.Errorf("Wanted %s Got %s", expected, &mapFiles)

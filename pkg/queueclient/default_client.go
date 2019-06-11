@@ -27,9 +27,10 @@ func (q *inMemoryQueue) Enqueue(name, value string) error {
 // An error is returned if Dequeue is attempted on an
 // empty queue.
 func (q *inMemoryQueue) Dequeue(name string) (string, error) {
-	queue := q.queues[name]
 	q.mux.Lock()
 	defer q.mux.Unlock()
+	queue := q.queues[name]
+
 	if len(queue) == 0 {
 		return "", fmt.Errorf("queue %s length is 0", name)
 	}

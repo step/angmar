@@ -14,6 +14,7 @@ import (
 type Extractor interface {
 	ExtractFile(tar.Header, io.Reader) error
 	ExtractDir(tar.Header, io.Reader) error
+	GetBasePath() string
 }
 
 // ExtractorGenerator is an interface that is used to generate
@@ -75,6 +76,10 @@ func (extractor DefaultExtractor) ExtractDir(header tar.Header, reader io.Reader
 	}
 
 	return nil
+}
+
+func (extractor DefaultExtractor) GetBasePath() string {
+	return extractor.src
 }
 
 // NewDefaultExtractor creates an instance of DefaultExtractor with the specified src

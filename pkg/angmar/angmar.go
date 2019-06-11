@@ -19,18 +19,21 @@ type AngmarMessage struct {
 	Url    string
 	SHA    string
 	Pusher string
+	Tasks  []string
 }
 
 type Job struct {
 	message        AngmarMessage
 	generator      tarutils.ExtractorGenerator
 	downloadClient downloadclient.DownloadClient
+	queueClient    queueclient.QueueClient
 }
 
 func worker(id int, jobs <-chan Job, rChan chan<- bool) {
 	// jobs is buffered, so range is a blocking call if there are no jobs
 	for job := range jobs {
 		message := job.message
+		fmt.Println(message)
 		extractor := job.generator.Generate(message.Pusher, message.SHA, message.Url)
 		err := job.downloadClient.Download(message.Url, extractor)
 
@@ -42,6 +45,10 @@ func worker(id int, jobs <-chan Job, rChan chan<- bool) {
 			response = false
 		}
 
+		for _, q := range job.message.Tasks {
+			err := job.queueClient.Enqueue(q, extractor.GetBasePath())
+			fmt.Println(err, q)
+		}
 		rChan <- response
 	}
 }
@@ -81,6 +88,6 @@ func (a Angmar) Start(qName string, r chan<- bool, stop <-chan bool) {
 		}
 
 		// Schedule the job to be run by a worker.
-		jobs <- Job{message, a.Generator, a.DownloadClient}
+		jobs <- Job{message, a.Generator, a.DownloadClient, a.QueueClient}
 	}
 }

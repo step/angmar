@@ -40,7 +40,7 @@ func TestUntar(t *testing.T) {
 
 	expected := testutils.CreateMapFiles(map[string]string{
 		"dir/foo": "hello",
-	}, []string{"dir/"})
+	}, []string{"dir/"}, "")
 
 	t.Run("Single file in single directory", testUntarOfFiles(files, dirs, expected))
 }
@@ -123,5 +123,9 @@ func TestDefaultExtractor(t *testing.T) {
 	err = os.RemoveAll(src)
 	if err != nil {
 		t.Errorf("An unexpected error occurred removing %s\n%s", src, err.Error())
+	}
+
+	if extractor.GetBasePath() != src {
+		t.Errorf("Expected %s got %s", src, extractor.GetBasePath())
 	}
 }
