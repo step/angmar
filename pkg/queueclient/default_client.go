@@ -55,6 +55,10 @@ func (q *inMemoryQueue) SwitchQueue(src, dest string) (string, error) {
 	return value, nil
 }
 
+func (q *inMemoryQueue) String() string {
+	return fmt.Sprintf("%s", q.queues)
+}
+
 // NewDefaultClient provides an in memory implementation of a queue
 func NewDefaultClient() QueueClient {
 	return &inMemoryQueue{queues: make(map[string][]string)}

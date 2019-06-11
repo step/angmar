@@ -11,6 +11,6 @@ angmar:
 angmar_stripped:
 	go build -o bin/angmar -ldflags="-s -w" pkg/main/main.go
 
-.PHoNY: angmar_compressed
+.PHONY: angmar_compressed
 angmar_compressed: angmar_stripped
 	upx bin/angmar

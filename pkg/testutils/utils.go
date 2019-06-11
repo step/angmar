@@ -61,6 +61,10 @@ func (mapFiles *MapFiles) GetBasePath() string {
 	return mapFiles.basePath
 }
 
+func (mapFiles *MapFiles) String() string {
+	return ""
+}
+
 func NewMapFiles() MapFiles {
 	return MapFiles{map[string]string{}, []string{}, ""}
 }

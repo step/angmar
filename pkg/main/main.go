@@ -1,7 +1,11 @@
 package main
 
 import (
+	"fmt"
+	"io"
+	"log"
 	"net/http"
+	"os"
 	"path/filepath"
 	"time"
 
@@ -34,6 +38,10 @@ func (r RedisClient) SwitchQueue(src, dest string) (string, error) {
 	return "", nil
 }
 
+func (r RedisClient) String() string {
+	return r.actualClient.String()
+}
+
 type DefaultExtractorGenerator struct {
 	src string
 }
@@ -41,6 +49,10 @@ type DefaultExtractorGenerator struct {
 func (d DefaultExtractorGenerator) Generate(args ...string) tarutils.Extractor {
 	dir := filepath.Join(d.src, args[0], args[1])
 	return tarutils.NewDefaultExtractor(dir)
+}
+
+func (d DefaultExtractorGenerator) String() string {
+	return fmt.Sprintf("DefaultExtractorGenerator: %s\n", d.src)
 }
 
 func main() {
@@ -52,7 +64,15 @@ func main() {
 	queueClient := RedisClient{client}
 	generator := DefaultExtractorGenerator{"/tmp/angmar"}
 
-	a := angmar.Angmar{queueClient, generator, gh.GithubAPI{http.DefaultClient}}
+	file, _ := os.OpenFile("/tmp/angmar.log", os.O_RDWR|os.O_CREATE, 0755)
+	defer file.Close()
+	multiWriter := io.MultiWriter(file, os.Stdout)
+	actualLogger := log.New(multiWriter, "--> ", log.LstdFlags)
+	logger := angmar.AngmarLogger{Logger: actualLogger}
+	a := angmar.Angmar{QueueClient: queueClient,
+		Generator:      generator,
+		DownloadClient: gh.GithubAPI{Client: http.DefaultClient},
+		Logger:         logger}
 	r := make(chan bool, 100)
 	stop := make(chan bool)
 	a.Start("my_queue", r, stop)

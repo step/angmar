@@ -7,4 +7,5 @@ type QueueClient interface {
 	Enqueue(name, value string) error
 	Dequeue(name string) (string, error)
 	SwitchQueue(src, dest string) (string, error)
+	String() string
 }

@@ -2,7 +2,7 @@ package angmar
 
 import (
 	"encoding/json"
-	"fmt"
+	"strings"
 
 	"github.com/step/angmar/pkg/downloadclient"
 	"github.com/step/angmar/pkg/queueclient"
@@ -13,59 +13,55 @@ type Angmar struct {
 	QueueClient    queueclient.QueueClient
 	Generator      tarutils.ExtractorGenerator
 	DownloadClient downloadclient.DownloadClient
+	Logger         AngmarLogger
 }
 
-type AngmarMessage struct {
-	Url    string
-	SHA    string
-	Pusher string
-	Tasks  []string
+func (a Angmar) String() string {
+	var builder strings.Builder
+	builder.WriteString(a.QueueClient.String() + "\n")
+	builder.WriteString(a.Generator.String())
+	return builder.String()
 }
 
-type Job struct {
-	message        AngmarMessage
-	generator      tarutils.ExtractorGenerator
-	downloadClient downloadclient.DownloadClient
-	queueClient    queueclient.QueueClient
-}
-
-func worker(id int, jobs <-chan Job, rChan chan<- bool) {
+func worker(id int, angmar Angmar, messages <-chan AngmarMessage, rChan chan<- bool) {
 	// jobs is buffered, so range is a blocking call if there are no jobs
-	for job := range jobs {
-		message := job.message
-		fmt.Println(message)
-		extractor := job.generator.Generate(message.Pusher, message.SHA, message.Url)
-		err := job.downloadClient.Download(message.Url, extractor)
-
-		// Assume everything went well
-		response := true
+	for message := range messages {
+		angmar.Logger.ReceivedMessage(id, message)
+		extractor := angmar.Generator.Generate(message.Pusher, message.SHA, message.Url)
+		err := angmar.DownloadClient.Download(message.Url, extractor)
 
 		if err != nil {
-			fmt.Println(err)
-			response = false
+			angmar.Logger.LogError(id, err, message)
+			rChan <- false
+			continue
 		}
 
-		for _, q := range job.message.Tasks {
-			err := job.queueClient.Enqueue(q, extractor.GetBasePath())
-			fmt.Println(err, q)
+		for _, q := range message.Tasks {
+			err := angmar.QueueClient.Enqueue(q, extractor.GetBasePath())
+			if err != nil {
+				angmar.Logger.LogError(id, err, message)
+				continue
+			}
+			angmar.Logger.TaskPlacedOnQueue(id, message, q)
 		}
-		rChan <- response
+		rChan <- true
 	}
 }
 
 func (a Angmar) Start(qName string, r chan<- bool, stop <-chan bool) {
+	a.Logger.StartAngmar(a, qName)
 	// A flag to stop placing jobs on worker threads
 	shouldStop := false
 	go func() {
 		shouldStop = <-stop
 	}()
 
-	jobs := make(chan Job, 10)
+	jobs := make(chan AngmarMessage, 10)
 
 	// Create workers. The number 10 should eventually come from config
 	// and be a field in the Angmar struct
 	for index := 0; index < 10; index++ {
-		go worker(index, jobs, r)
+		go worker(index, a, jobs, r)
 	}
 
 	for {
@@ -88,6 +84,6 @@ func (a Angmar) Start(qName string, r chan<- bool, stop <-chan bool) {
 		}
 
 		// Schedule the job to be run by a worker.
-		jobs <- Job{message, a.Generator, a.DownloadClient, a.QueueClient}
+		jobs <- message
 	}
 }

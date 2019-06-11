@@ -2,6 +2,8 @@ package angmar_test
 
 import (
 	"encoding/json"
+	"io/ioutil"
+	"log"
 	"path/filepath"
 	"reflect"
 	"testing"
@@ -23,6 +25,9 @@ func (d *DefaultExtractorGenerator) Generate(args ...string) tarutils.Extractor 
 	d.mapFiles = testutils.CreateMapFiles(map[string]string{}, []string{}, basePath)
 	return d.mapFiles
 }
+func (d *DefaultExtractorGenerator) String() string {
+	return ""
+}
 
 func TestAngmar(t *testing.T) {
 	queueClient := queueclient.NewDefaultClient()
@@ -32,7 +37,8 @@ func TestAngmar(t *testing.T) {
 	defer archiveServer.Close()
 	apiClient := gh.GithubAPI{Client: server.Client()}
 
-	angmar := a.Angmar{QueueClient: queueClient, Generator: &generator, DownloadClient: apiClient}
+	logger := a.AngmarLogger{Logger: log.New(ioutil.Discard, "", log.LstdFlags)}
+	angmar := a.Angmar{QueueClient: queueClient, Generator: &generator, DownloadClient: apiClient, Logger: logger}
 	responseCh := make(chan bool)
 	stopCh := make(chan bool)
 
