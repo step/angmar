@@ -24,7 +24,7 @@ func (a Angmar) String() string {
 }
 
 func worker(id int, angmar Angmar, messages <-chan AngmarMessage, rChan chan<- bool) {
-	// jobs is buffered, so range is a blocking call if there are no jobs
+	// messages is buffered, so range is a blocking call if there are no messages
 	for message := range messages {
 		angmar.Logger.ReceivedMessage(id, message)
 		extractor := angmar.Generator.Generate(message.Pusher, message.SHA, message.Url)
