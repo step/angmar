@@ -9,9 +9,8 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/step/angmar/pkg/angmar"
-
 	"github.com/go-redis/redis"
+	"github.com/step/angmar/pkg/angmar"
 	"github.com/step/angmar/pkg/gh"
 	"github.com/step/angmar/pkg/tarutils"
 )
@@ -26,7 +25,7 @@ func (r RedisClient) Enqueue(name, value string) error {
 }
 
 func (r RedisClient) Dequeue(name string) (string, error) {
-	resp := r.actualClient.BRPop(time.Minute, name)
+	resp := r.actualClient.BRPop(time.Second*3, name)
 	values, err := resp.Result()
 	if err != nil {
 		return "", err
@@ -62,18 +61,30 @@ func main() {
 		DB:       2,  // use default DB
 	})
 	queueClient := RedisClient{client}
+
 	generator := DefaultExtractorGenerator{"/tmp/angmar"}
 
 	file, _ := os.OpenFile("/tmp/angmar.log", os.O_RDWR|os.O_CREATE, 0755)
 	defer file.Close()
 	multiWriter := io.MultiWriter(file, os.Stdout)
+
 	actualLogger := log.New(multiWriter, "--> ", log.LstdFlags)
 	logger := angmar.AngmarLogger{Logger: actualLogger}
-	a := angmar.Angmar{QueueClient: queueClient,
+
+	a := angmar.Angmar{
+		QueueClient:    queueClient,
 		Generator:      generator,
 		DownloadClient: gh.GithubAPI{Client: http.DefaultClient},
-		Logger:         logger}
+		Logger:         logger,
+	}
+
 	r := make(chan bool, 100)
 	stop := make(chan bool)
-	a.Start("my_queue", r, stop)
+
+	go a.Start("my_queue", r, stop)
+
+	for response := range r {
+		fmt.Println(response)
+		time.Sleep(time.Millisecond * 100)
+	}
 }

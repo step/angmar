@@ -1,6 +1,7 @@
 package gh
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/step/angmar/pkg/tarutils"
@@ -23,6 +24,17 @@ type GithubAPI struct {
 func (api *GithubAPI) FetchTarball(url string, extractor tarutils.Extractor) error {
 	location := "FetchTarball"
 	resp, err := api.Client.Get(url)
+
+	if resp == nil {
+		return ClientFetchError{url, "GET", err, location}
+	}
+
+	if resp.Body != nil {
+		defer func() {
+			fmt.Println("closing body")
+			resp.Body.Close()
+		}()
+	}
 
 	if err != nil {
 		return ClientFetchError{url, "GET", err, location}

@@ -2,7 +2,9 @@ package angmar
 
 import (
 	"encoding/json"
+	"fmt"
 	"strings"
+	"time"
 
 	"github.com/step/angmar/pkg/downloadclient"
 	"github.com/step/angmar/pkg/queueclient"
@@ -26,6 +28,7 @@ func (a Angmar) String() string {
 func worker(id int, angmar Angmar, messages <-chan AngmarMessage, rChan chan<- bool) {
 	// messages is buffered, so range is a blocking call if there are no messages
 	for message := range messages {
+		fmt.Println(id, message)
 		angmar.Logger.ReceivedMessage(id, message)
 		extractor := angmar.Generator.Generate(message.Pusher, message.SHA, message.Url)
 		err := angmar.DownloadClient.Download(message.Url, extractor)
@@ -64,6 +67,9 @@ func (a Angmar) Start(qName string, r chan<- bool, stop <-chan bool) {
 		go worker(index, a, jobs, r)
 	}
 
+	var val string
+	var err error
+
 	for {
 		// Keep running till asked to stop
 		if shouldStop {
@@ -71,19 +77,20 @@ func (a Angmar) Start(qName string, r chan<- bool, stop <-chan bool) {
 		}
 
 		// Take the first job off the queue
-		val, err := a.QueueClient.Dequeue(qName)
+		val, err = a.QueueClient.Dequeue(qName)
 		if err != nil {
+			time.Sleep(100 * time.Millisecond)
 			continue
 		}
 
 		// Read the JSON
-		var message AngmarMessage
-		err = json.Unmarshal([]byte(val), &message)
+		message := new(AngmarMessage)
+		err = json.Unmarshal([]byte(val), message)
 		if err != nil {
 			continue
 		}
 
 		// Schedule the job to be run by a worker.
-		jobs <- message
+		jobs <- *message
 	}
 }

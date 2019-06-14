@@ -5,7 +5,7 @@ test:
 	go test -cover $(PKGS)
 
 angmar:
-	go build -o bin/angmar pkg/main/main.go
+	CGO_ENABLED=0 go build -o bin/angmar pkg/main/main.go
 
 .PHONY: angmar_stripped
 angmar_stripped:
