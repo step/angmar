@@ -15,7 +15,7 @@ type AngmarLogger struct {
 
 // StartAngmar should be called when Angmar.Start is called.
 // It logs the Angmar instance the queue that Angmar listens to.
-func (l AngmarLogger) StartAngmar(a Angmar, queueName string) {
+func (l AngmarLogger) StartAngmar(a angmar, queueName string) {
 	var builder strings.Builder
 	builder.WriteString("Starting Angmar...\n")
 	builder.WriteString("---\n")

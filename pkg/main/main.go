@@ -46,12 +46,9 @@ func main() {
 	actualLogger := log.New(multiWriter, "--> ", log.LstdFlags)
 	logger := angmar.AngmarLogger{Logger: actualLogger}
 
-	a := angmar.Angmar{
-		QueueClient:    redisClient,
-		Generator:      generator,
-		DownloadClient: gh.GithubAPI{Client: http.DefaultClient},
-		Logger:         logger,
-	}
+	ghClient := gh.GithubAPI{Client: http.DefaultClient}
+
+	a := angmar.NewAngmar(redisClient, generator, ghClient, logger, numberOfWorkers)
 
 	r := make(chan bool, 100)
 	stop := make(chan bool)

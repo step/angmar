@@ -38,7 +38,7 @@ func TestAngmar(t *testing.T) {
 	apiClient := gh.GithubAPI{Client: server.Client()}
 
 	logger := a.AngmarLogger{Logger: log.New(ioutil.Discard, "", log.LstdFlags)}
-	angmar := a.Angmar{QueueClient: queueClient, Generator: &generator, DownloadClient: apiClient, Logger: logger}
+	angmar := a.NewAngmar(queueClient, &generator, apiClient, logger, 1)
 	responseCh := make(chan bool)
 	stopCh := make(chan bool)
 
