@@ -2,6 +2,7 @@ package tarutils
 
 import (
 	"archive/tar"
+	"fmt"
 	"io"
 	"os"
 	"path/filepath"
@@ -91,4 +92,17 @@ func (extractor DefaultExtractor) String() string {
 // NewDefaultExtractor creates an instance of DefaultExtractor with the specified src
 func NewDefaultExtractor(src string) Extractor {
 	return DefaultExtractor{src}
+}
+
+type DefaultExtractorGenerator struct {
+	Src string
+}
+
+func (d DefaultExtractorGenerator) Generate(args ...string) Extractor {
+	dir := filepath.Join(d.Src, args[0], args[1])
+	return NewDefaultExtractor(dir)
+}
+
+func (d DefaultExtractorGenerator) String() string {
+	return fmt.Sprintf("DefaultExtractorGenerator: %s\n", d.Src)
 }

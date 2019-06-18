@@ -1,68 +1,28 @@
 package main
 
 import (
-	"fmt"
 	"io"
 	"log"
 	"net/http"
 	"os"
-	"path/filepath"
 	"time"
 
-	"github.com/go-redis/redis"
 	"github.com/step/angmar/pkg/angmar"
 	"github.com/step/angmar/pkg/gh"
+	"github.com/step/angmar/pkg/redisclient"
 	"github.com/step/angmar/pkg/tarutils"
 )
 
-type RedisClient struct {
-	actualClient *redis.Client
-}
-
-func (r RedisClient) Enqueue(name, value string) error {
-	r.actualClient.LPush(name, value)
-	return nil
-}
-
-func (r RedisClient) Dequeue(name string) (string, error) {
-	resp := r.actualClient.BRPop(time.Second*3, name)
-	values, err := resp.Result()
-	if err != nil {
-		return "", err
-	}
-	return values[1], err
-}
-
-func (r RedisClient) SwitchQueue(src, dest string) (string, error) {
-	return "", nil
-}
-
-func (r RedisClient) String() string {
-	return r.actualClient.String()
-}
-
-type DefaultExtractorGenerator struct {
-	src string
-}
-
-func (d DefaultExtractorGenerator) Generate(args ...string) tarutils.Extractor {
-	dir := filepath.Join(d.src, args[0], args[1])
-	return tarutils.NewDefaultExtractor(dir)
-}
-
-func (d DefaultExtractorGenerator) String() string {
-	return fmt.Sprintf("DefaultExtractorGenerator: %s\n", d.src)
-}
-
 func main() {
-	client := redis.NewClient(&redis.Options{
-		Addr:     "localhost:6379",
-		Password: "", // no password set
-		DB:       2,  // use default DB
-	})
-	queueClient := RedisClient{client}
+	redisConf := redisclient.RedisConf{
+		Address:  "localhost:6379",
+		Db:       2,
+		Password: "",
+	}
 
-	generator := DefaultExtractorGenerator{"/tmp/angmar"}
+	redisClient := redisclient.NewDefaultClient(redisConf)
+
+	generator := tarutils.DefaultExtractorGenerator{"/tmp/angmar"}
 
 	file, _ := os.OpenFile("/tmp/angmar.log", os.O_RDWR|os.O_CREATE, 0755)
 	defer file.Close()
@@ -72,7 +32,7 @@ func main() {
 	logger := angmar.AngmarLogger{Logger: actualLogger}
 
 	a := angmar.Angmar{
-		QueueClient:    queueClient,
+		QueueClient:    redisClient,
 		Generator:      generator,
 		DownloadClient: gh.GithubAPI{Client: http.DefaultClient},
 		Logger:         logger,
@@ -83,8 +43,7 @@ func main() {
 
 	go a.Start("my_queue", r, stop)
 
-	for response := range r {
-		fmt.Println(response)
+	for range r {
 		time.Sleep(time.Millisecond * 100)
 	}
 }
