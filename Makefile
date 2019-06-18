@@ -5,11 +5,11 @@ test:
 	go test -cover $(PKGS)
 
 angmar:
-	CGO_ENABLED=0 go build -o bin/angmar pkg/main/main.go
+	CGO_ENABLED=0 go build -o bin/angmar ./pkg/main/
 
 .PHONY: angmar_stripped
 angmar_stripped:
-	go build -o bin/angmar -ldflags="-s -w" pkg/main/main.go
+	go build -o bin/angmar -ldflags="-s -w" ./pkg/main/
 
 .PHONY: angmar_compressed
 angmar_compressed: angmar_stripped
