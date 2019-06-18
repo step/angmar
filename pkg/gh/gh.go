@@ -54,3 +54,7 @@ func (api *GithubAPI) FetchTarball(url string, extractor tarutils.Extractor) err
 func (api GithubAPI) Download(url string, extractor tarutils.Extractor) error {
 	return api.FetchTarball(url, extractor)
 }
+
+func DefaultGithubAPI() GithubAPI {
+	return GithubAPI{http.DefaultClient}
+}

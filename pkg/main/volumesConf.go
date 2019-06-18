@@ -2,7 +2,11 @@ package main
 
 import (
 	"flag"
+	"fmt"
+	"os"
 	"path/filepath"
+
+	"github.com/step/angmar/pkg/tarutils"
 )
 
 var sourceVolPath string
@@ -17,4 +21,17 @@ func init() {
 
 func getLogfileName() string {
 	return filepath.Join(logPath, logFilename)
+}
+
+func getLogfile() *os.File {
+	file, err := os.OpenFile(getLogfileName(), os.O_RDWR|os.O_CREATE, 0755)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+	return file
+}
+
+func getExtractorGenerator() tarutils.ExtractorGenerator {
+	return tarutils.DefaultExtractorGenerator{Src: sourceVolPath}
 }

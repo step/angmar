@@ -3,37 +3,29 @@ package main
 import (
 	"flag"
 	"fmt"
-	"io"
-	"log"
-	"net/http"
 	"os"
 	"time"
 
 	"github.com/step/angmar/pkg/angmar"
 	"github.com/step/angmar/pkg/gh"
-	"github.com/step/angmar/pkg/redisclient"
-	"github.com/step/angmar/pkg/tarutils"
 )
 
-func main() {
+func handleHelp() {
 	if os.Args[1] == "help" {
 		flag.Usage()
 		os.Exit(0)
 	}
+}
 
+func main() {
+	handleHelp()
 	flag.Parse()
 
-	redisConf := getRedisConf()
-	redisClient := redisclient.NewDefaultClient(redisConf)
+	redisClient := getRedisClient()
+	generator := getExtractorGenerator()
 
-	generator := tarutils.DefaultExtractorGenerator{Src: sourceVolPath}
-
-	file, err := os.OpenFile(getLogfileName(), os.O_RDWR|os.O_CREATE, 0755)
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
-
+	// potentially exits if unable to open file
+	file := getLogfile()
 	defer func() {
 		if err := file.Close(); err != nil {
 			fmt.Println(err)
@@ -41,12 +33,9 @@ func main() {
 		}
 	}()
 
-	multiWriter := io.MultiWriter(file, os.Stdout)
+	logger := getLogger(file)
 
-	actualLogger := log.New(multiWriter, "--> ", log.LstdFlags)
-	logger := angmar.AngmarLogger{Logger: actualLogger}
-
-	ghClient := gh.GithubAPI{Client: http.DefaultClient}
+	ghClient := gh.DefaultGithubAPI()
 
 	a := angmar.NewAngmar(redisClient, generator, ghClient, logger, numberOfWorkers)
 

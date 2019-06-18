@@ -16,10 +16,11 @@ func init() {
 	flag.StringVar(&redisPassword, "redis-password", "", "`password` for Redis host")
 }
 
-func getRedisConf() redisclient.RedisConf {
-	return redisclient.RedisConf{
+func getRedisClient() redisclient.RedisClient {
+	redisConf := redisclient.RedisConf{
 		Address:  redisAddress,
 		Password: redisPassword,
 		Db:       redisDb,
 	}
+	return redisclient.NewDefaultClient(redisConf)
 }
