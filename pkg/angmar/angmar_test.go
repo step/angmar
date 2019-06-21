@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/step/angmar/pkg/queueclient"
+	"github.com/step/saurontypes"
 
 	a "github.com/step/angmar/pkg/angmar"
 	"github.com/step/angmar/pkg/gh"
@@ -42,7 +43,7 @@ func TestAngmar(t *testing.T) {
 	responseCh := make(chan bool)
 	stopCh := make(chan bool)
 
-	message := a.AngmarMessage{Url: server.URL, SHA: "0abcdef1234", Pusher: "me", Tasks: []string{"test", "lint"}}
+	message := saurontypes.AngmarMessage{Url: server.URL, SHA: "0abcdef1234", Pusher: "me", Tasks: []string{"test", "lint"}}
 	jsonMessage, _ := json.Marshal(message)
 
 	if err := queueClient.Enqueue("queue", string(jsonMessage)); err != nil {

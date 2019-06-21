@@ -9,6 +9,7 @@ import (
 	"github.com/step/angmar/pkg/downloadclient"
 	"github.com/step/angmar/pkg/queueclient"
 	"github.com/step/angmar/pkg/tarutils"
+	"github.com/step/saurontypes"
 )
 
 type angmar struct {
@@ -26,7 +27,7 @@ func (a angmar) String() string {
 	return builder.String()
 }
 
-func worker(id int, a angmar, messages <-chan AngmarMessage, rChan chan<- bool) {
+func worker(id int, a angmar, messages <-chan saurontypes.AngmarMessage, rChan chan<- bool) {
 	// messages is buffered, so range is a blocking call if there are no messages
 	for message := range messages {
 		fmt.Println(id, message)
@@ -60,7 +61,7 @@ func (a angmar) Start(qName string, r chan<- bool, stop <-chan bool) {
 		shouldStop = <-stop
 	}()
 
-	jobs := make(chan AngmarMessage, 10)
+	jobs := make(chan saurontypes.AngmarMessage, 10)
 
 	// Create workers. The number 10 should eventually come from config
 	// and be a field in the Angmar struct
@@ -85,7 +86,7 @@ func (a angmar) Start(qName string, r chan<- bool, stop <-chan bool) {
 		}
 
 		// Read the JSON
-		message := new(AngmarMessage)
+		message := new(saurontypes.AngmarMessage)
 		err = json.Unmarshal([]byte(val), message)
 		if err != nil {
 			continue
