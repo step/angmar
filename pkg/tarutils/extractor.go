@@ -6,6 +6,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 // Extractor is an interface that can be used whenever one
@@ -33,15 +34,23 @@ type DefaultExtractor struct {
 	src string
 }
 
+func stripLeadingComponent(path string) string {
+	pathComponents := strings.Split(path, string(filepath.Separator))
+	return filepath.Join(pathComponents[1:]...)
+}
+
 // DefaultExtractor.ExtractFile extracts the given file under src specified
 // in DefaultExtractor
 func (extractor DefaultExtractor) ExtractFile(header tar.Header, reader io.Reader) (rerr error) {
 	// Open file and defer file.Close()
+	// TODO: create a more general file ignore mechanism
 	if header.Name == "pax_global_header" {
 		return nil
 	}
+
 	location := "DefaultExtractor.ExtractFile"
-	fileName := filepath.Join(extractor.src, header.Name)
+	actualPath := stripLeadingComponent(header.Name)
+	fileName := filepath.Join(extractor.src, actualPath)
 	file, ferr := os.OpenFile(fileName, os.O_CREATE|os.O_RDWR, header.FileInfo().Mode())
 
 	// Handle defer in an anonymous func
@@ -72,7 +81,8 @@ func (extractor DefaultExtractor) ExtractFile(header tar.Header, reader io.Reade
 // in DefaultExtractor
 func (extractor DefaultExtractor) ExtractDir(header tar.Header, reader io.Reader) error {
 	// Create directory in src
-	dirName := filepath.Join(extractor.src, header.Name)
+	actualPath := stripLeadingComponent(header.Name)
+	dirName := filepath.Join(extractor.src, actualPath)
 	err := os.MkdirAll(dirName, header.FileInfo().Mode())
 	if err != nil {
 		return MakeDirError{dirName, err, "DefaultExtractor.ExtractDir"}

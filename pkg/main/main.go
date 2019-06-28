@@ -10,15 +10,7 @@ import (
 	"github.com/step/angmar/pkg/gh"
 )
 
-func handleHelp() {
-	if os.Args[1] == "help" {
-		flag.Usage()
-		os.Exit(0)
-	}
-}
-
 func main() {
-	handleHelp()
 	flag.Parse()
 
 	redisClient := getRedisClient()

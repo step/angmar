@@ -99,7 +99,7 @@ func TestDefaultExtractor(t *testing.T) {
 	}
 
 	// Verify contents of files written to disk
-	untarredFileToTest := filepath.Join(src, "dir", "foo")
+	untarredFileToTest := filepath.Join(src, "foo")
 	file, err := os.Open(untarredFileToTest)
 	if err != nil {
 		t.Errorf("Unable to open file %s\n%s", untarredFileToTest, err.Error())
