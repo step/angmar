@@ -32,7 +32,7 @@ func worker(id int, a angmar, messages <-chan saurontypes.AngmarMessage, rChan c
 	for message := range messages {
 		fmt.Println(id, message)
 		a.Logger.ReceivedMessage(id, message)
-		extractor := a.Generator.Generate(message.Pusher, message.SHA, message.Url)
+		extractor := a.Generator.Generate(message.Project, message.Pusher, message.SHA)
 		err := a.DownloadClient.Download(message.Url, extractor)
 
 		if err != nil {

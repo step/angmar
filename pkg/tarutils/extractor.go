@@ -109,7 +109,8 @@ type DefaultExtractorGenerator struct {
 }
 
 func (d DefaultExtractorGenerator) Generate(args ...string) Extractor {
-	dir := filepath.Join(d.Src, args[0], args[1])
+	relativePath := filepath.Join(args...)
+	dir := filepath.Join(d.Src, relativePath)
 	return NewDefaultExtractor(dir)
 }
 

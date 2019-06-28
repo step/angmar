@@ -22,7 +22,7 @@ type DefaultExtractorGenerator struct {
 }
 
 func (d *DefaultExtractorGenerator) Generate(args ...string) tarutils.Extractor {
-	basePath := filepath.Join(args[0], args[1])
+	basePath := filepath.Join(args...)
 	d.mapFiles = testutils.CreateMapFiles(map[string]string{}, []string{}, basePath)
 	return d.mapFiles
 }
@@ -43,7 +43,7 @@ func TestAngmar(t *testing.T) {
 	responseCh := make(chan bool)
 	stopCh := make(chan bool)
 
-	message := saurontypes.AngmarMessage{Url: server.URL, SHA: "0abcdef1234", Pusher: "me", Tasks: []string{"test", "lint"}}
+	message := saurontypes.AngmarMessage{Url: server.URL, SHA: "0abcdef1234", Pusher: "me", Tasks: []string{"test", "lint"}, Project: "euler"}
 	jsonMessage, _ := json.Marshal(message)
 
 	if err := queueClient.Enqueue("queue", string(jsonMessage)); err != nil {
@@ -61,7 +61,7 @@ func TestAngmar(t *testing.T) {
 
 	expected := testutils.CreateMapFiles(map[string]string{
 		"dir/foo": "hello",
-	}, []string{"dir/"}, "me/0abcdef1234")
+	}, []string{"dir/"}, "euler/me/0abcdef1234")
 
 	if !reflect.DeepEqual(generator.mapFiles, expected) {
 		t.Errorf("Untar failed: Wanted %s Got %s", expected, generator.mapFiles)
@@ -73,7 +73,7 @@ func TestAngmar(t *testing.T) {
 			t.Errorf("Unexpected error while dequeuing from test")
 		}
 
-		if val != "me/0abcdef1234" {
+		if val != "euler/me/0abcdef1234" {
 			t.Errorf("Expected %s, got %s while testing downstream queue", "me/0abcdef1234", val)
 		}
 	}

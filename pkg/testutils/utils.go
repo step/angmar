@@ -62,7 +62,7 @@ func (mapFiles *MapFiles) GetBasePath() string {
 }
 
 func (mapFiles *MapFiles) String() string {
-	return ""
+	return fmt.Sprintf("%s\n%s\n%s", mapFiles.files, mapFiles.dirs, mapFiles.basePath)
 }
 
 func NewMapFiles() MapFiles {
