@@ -22,10 +22,11 @@ type DefaultExtractorGenerator struct {
 }
 
 func (d *DefaultExtractorGenerator) Generate(args ...string) tarutils.Extractor {
-	basePath := filepath.Join(args...)
+	basePath := filepath.Join("/source", filepath.Join(args...))
 	d.mapFiles = testutils.CreateMapFiles(map[string]string{}, []string{}, basePath)
 	return d.mapFiles
 }
+
 func (d *DefaultExtractorGenerator) String() string {
 	return ""
 }
@@ -39,7 +40,7 @@ func TestAngmar(t *testing.T) {
 	apiClient := gh.GithubAPI{Client: server.Client()}
 
 	logger := a.AngmarLogger{Logger: log.New(ioutil.Discard, "", log.LstdFlags)}
-	angmar := a.NewAngmar(queueClient, &generator, apiClient, logger, 1)
+	angmar := a.NewAngmar(queueClient, &generator, apiClient, logger, 1, "/source")
 	responseCh := make(chan bool)
 	stopCh := make(chan bool)
 
@@ -61,7 +62,7 @@ func TestAngmar(t *testing.T) {
 
 	expected := testutils.CreateMapFiles(map[string]string{
 		"dir/foo": "hello",
-	}, []string{"dir/"}, "euler/me/0abcdef1234")
+	}, []string{"dir/"}, "/source/euler/me/0abcdef1234")
 
 	if !reflect.DeepEqual(generator.mapFiles, expected) {
 		t.Errorf("Untar failed: Wanted %s Got %s", expected, generator.mapFiles)
@@ -72,9 +73,22 @@ func TestAngmar(t *testing.T) {
 		if err != nil {
 			t.Errorf("Unexpected error while dequeuing from test")
 		}
-
-		if val != "euler/me/0abcdef1234" {
-			t.Errorf("Expected %s, got %s while testing downstream queue", "me/0abcdef1234", val)
+		expectedUrukMessage := saurontypes.UrukMessage{
+			ImageName:    "",
+			RepoLocation: "euler/me/0abcdef1234",
 		}
+		var urukMessage saurontypes.UrukMessage
+		err = json.Unmarshal([]byte(val), &urukMessage)
+
+		if err != nil {
+			t.Errorf("Unable to unmarshall urukMessage %s", val)
+		}
+
+		if urukMessage != expectedUrukMessage {
+			t.Errorf("Expected %s, got %s while testing downstream queue", expectedUrukMessage, urukMessage)
+		}
+		// if val != "euler/me/0abcdef1234" {
+		// 	t.Errorf("Expected %s, got %s while testing downstream queue", "me/0abcdef1234", val)
+		// }
 	}
 }

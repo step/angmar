@@ -13,11 +13,12 @@ import (
 )
 
 type angmar struct {
-	QueueClient    queueclient.QueueClient
-	Generator      tarutils.ExtractorGenerator
-	DownloadClient downloadclient.DownloadClient
-	Logger         AngmarLogger
-	NumOfWorkers   int
+	QueueClient      queueclient.QueueClient
+	Generator        tarutils.ExtractorGenerator
+	DownloadClient   downloadclient.DownloadClient
+	Logger           AngmarLogger
+	NumOfWorkers     int
+	SourceMountPoint string
 }
 
 func (a angmar) String() string {
@@ -42,7 +43,14 @@ func worker(id int, a angmar, messages <-chan saurontypes.AngmarMessage, rChan c
 		}
 
 		for _, q := range message.Tasks {
-			err := a.QueueClient.Enqueue(q, extractor.GetBasePath())
+			extractorBasePath := extractor.GetBasePath()
+			repoLocation := strings.Replace(extractorBasePath, a.SourceMountPoint+"/", "", 1)
+			urukMessage := saurontypes.ConvertAngmarToUrukMessage(message, repoLocation)
+			urukMessageAsJson, err := json.Marshal(urukMessage)
+			if err != nil {
+				return
+			}
+			err = a.QueueClient.Enqueue(q, string(urukMessageAsJson))
 			if err != nil {
 				a.Logger.LogError(id, err, message)
 				continue
@@ -102,11 +110,12 @@ func NewAngmar(
 	generator tarutils.ExtractorGenerator,
 	dClient downloadclient.DownloadClient,
 	logger AngmarLogger,
-	numOfWorkers int) angmar {
+	numOfWorkers int,
+	sourceMountPoint string) angmar {
 
 	if numOfWorkers < 1 {
 		numOfWorkers = 1
 	}
 
-	return angmar{qClient, generator, dClient, logger, numOfWorkers}
+	return angmar{qClient, generator, dClient, logger, numOfWorkers, sourceMountPoint}
 }
