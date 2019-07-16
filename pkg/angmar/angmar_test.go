@@ -44,7 +44,15 @@ func TestAngmar(t *testing.T) {
 	responseCh := make(chan bool)
 	stopCh := make(chan bool)
 
-	message := saurontypes.AngmarMessage{Url: server.URL, SHA: "0abcdef1234", Pusher: "me", Tasks: []string{"test", "lint"}, Project: "euler"}
+	message := saurontypes.AngmarMessage{
+		Url:    server.URL,
+		SHA:    "0abcdef1234",
+		Pusher: "me",
+		Tasks: []saurontypes.Task{
+			{Queue: "test", ImageName: "orc_sample"},
+			{Queue: "lint", ImageName: "eslint"},
+		},
+		Project: "euler"}
 	jsonMessage, _ := json.Marshal(message)
 
 	if err := queueClient.Enqueue("queue", string(jsonMessage)); err != nil {
@@ -68,13 +76,15 @@ func TestAngmar(t *testing.T) {
 		t.Errorf("Untar failed: Wanted %s Got %s", expected, generator.mapFiles)
 	}
 
-	for _, q := range []string{"test", "lint"} {
-		val, err := queueClient.Dequeue(q)
+	for _, q := range []saurontypes.Task{
+		{Queue: "test", ImageName: "orc_sample"},
+		{Queue: "lint", ImageName: "eslint"}} {
+		val, err := queueClient.Dequeue(q.Queue)
 		if err != nil {
 			t.Errorf("Unexpected error while dequeuing from test")
 		}
 		expectedUrukMessage := saurontypes.UrukMessage{
-			ImageName:    "",
+			ImageName:    q.ImageName,
 			RepoLocation: "euler/me/0abcdef1234",
 		}
 		var urukMessage saurontypes.UrukMessage

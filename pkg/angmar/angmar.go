@@ -42,10 +42,11 @@ func worker(id int, a angmar, messages <-chan saurontypes.AngmarMessage, rChan c
 			continue
 		}
 
-		for _, q := range message.Tasks {
-			extractorBasePath := extractor.GetBasePath()
-			repoLocation := strings.Replace(extractorBasePath, a.SourceMountPoint+"/", "", 1)
-			urukMessage := saurontypes.ConvertAngmarToUrukMessage(message, repoLocation)
+		extractorBasePath := extractor.GetBasePath()
+		repoLocation := strings.Replace(extractorBasePath, a.SourceMountPoint+"/", "", 1)
+		urukMessages := saurontypes.ConvertAngmarToUrukMessages(message, repoLocation)
+
+		for q, urukMessage := range urukMessages {
 			urukMessageAsJson, err := json.Marshal(urukMessage)
 			if err != nil {
 				return
