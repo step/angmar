@@ -45,7 +45,7 @@ func TestAngmar(t *testing.T) {
 	stopCh := make(chan bool)
 
 	message := saurontypes.AngmarMessage{
-		Url:    server.URL,
+		URL:    server.URL,
 		SHA:    "0abcdef1234",
 		Pusher: "me",
 		Tasks: []saurontypes.Task{
