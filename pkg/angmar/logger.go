@@ -17,7 +17,7 @@ type AngmarLogger struct {
 
 // StartAngmar should be called when Angmar.Start is called.
 // It logs the Angmar instance the queue that Angmar listens to.
-func (l AngmarLogger) StartAngmar(a angmar, queueName string) {
+func (l AngmarLogger) StartAngmar(a Angmar, queueName string) {
 	var builder strings.Builder
 	builder.WriteString("Starting Angmar...\n")
 	builder.WriteString("---\n")
@@ -30,11 +30,11 @@ func (l AngmarLogger) StartAngmar(a angmar, queueName string) {
 
 // ReceivedMessage should be called when a worker picks up an
 // Angmar message and before it executes it.
-func (l AngmarLogger) ReceivedMessage(workerId int, message saurontypes.AngmarMessage) {
+func (l AngmarLogger) ReceivedMessage(workerID int, message saurontypes.AngmarMessage) {
 	var builder strings.Builder
-	workerIdStr := fmt.Sprintf("%d", workerId)
+	workerIDStr := fmt.Sprintf("%d", workerID)
 	builder.WriteString("Received Job...\n")
-	builder.WriteString("worker id: " + workerIdStr + "\n")
+	builder.WriteString("worker id: " + workerIDStr + "\n")
 	builder.WriteString(message.String())
 	l.Logger.Println(builder.String())
 }
@@ -42,11 +42,11 @@ func (l AngmarLogger) ReceivedMessage(workerId int, message saurontypes.AngmarMe
 // LogError should be called on any Error that occurs within a worker.
 // It logs the worker id, the error and the Angmar Message for which
 // the error occurred.
-func (l AngmarLogger) LogError(workerId int, err error, message saurontypes.AngmarMessage) {
+func (l AngmarLogger) LogError(workerID int, err error, message saurontypes.AngmarMessage) {
 	var builder strings.Builder
 	builder.WriteString("Error!\n")
-	workerIdStr := fmt.Sprintf("%d", workerId)
-	builder.WriteString("worker id: " + workerIdStr + "\n")
+	workerIDStr := fmt.Sprintf("%d", workerID)
+	builder.WriteString("worker id: " + workerIDStr + "\n")
 	builder.WriteString(message.String())
 	builder.WriteString(err.Error())
 	l.Logger.Println(builder.String())
@@ -55,11 +55,11 @@ func (l AngmarLogger) LogError(workerId int, err error, message saurontypes.Angm
 // TaskPlacedOnQueue should be called when a worker has finished downloading
 // and has placed a task on the respective downstream queue. It logs the worker id,
 // the Angmar Message and the name of the queue on which the task is placed.
-func (l AngmarLogger) TaskPlacedOnQueue(workerId int, message saurontypes.AngmarMessage, qName string) {
+func (l AngmarLogger) TaskPlacedOnQueue(workerID int, message saurontypes.AngmarMessage, qName string) {
 	var builder strings.Builder
 	builder.WriteString("Task placed on queue\n")
-	workerIdStr := fmt.Sprintf("%d", workerId)
-	builder.WriteString("worker id: " + workerIdStr + "\n")
+	workerIDStr := fmt.Sprintf("%d", workerID)
+	builder.WriteString("worker id: " + workerIDStr + "\n")
 	builder.WriteString(message.String())
 	builder.WriteString("queue: " + qName + "\n")
 	l.Logger.Println(builder.String())

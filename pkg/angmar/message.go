@@ -5,7 +5,7 @@ import "strings"
 // AngmarMessage is a struct that encapsulates the message that Angmar
 // listens to on a queue for.
 type AngmarMessage struct {
-	Url    string
+	URL    string
 	SHA    string
 	Pusher string
 	Tasks  []string
@@ -15,7 +15,7 @@ type AngmarMessage struct {
 // stringify the list of Tasks.
 func (m AngmarMessage) String() string {
 	var builder strings.Builder
-	builder.WriteString("URL: " + m.Url + "\n")
+	builder.WriteString("URL: " + m.URL + "\n")
 	builder.WriteString("SHA: " + m.SHA + "\n")
 	builder.WriteString("Pusher: " + m.Pusher + "\n")
 	return builder.String()
