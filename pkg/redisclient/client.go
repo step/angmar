@@ -30,6 +30,33 @@ func (r RedisClient) Dequeue(name string) (string, error) {
 	return values[1], err
 }
 
+func (r RedisClient) Add(sName, key, value string) error {
+	entry := make(map[string]interface{})
+	entry[key] = value
+	r.actualClient.XAdd(&redis.XAddArgs{
+		Stream: sName,
+		ID: "*",
+		Values: entry,
+	})
+	return nil
+}
+
+func (r RedisClient) Read() error  {
+	resp := r.actualClient.XRead(&redis.XReadArgs{
+		Streams: []string{"eventHub"},
+		Count: 0,
+		Block: time.Minute,
+	})
+	
+	_, err := resp.Result()
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (r RedisClient) SwitchQueue(src, dest string) (string, error) {
 	return "", nil
 }
