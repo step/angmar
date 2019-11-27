@@ -47,7 +47,7 @@ func worker(id int, a Angmar, messages <-chan saurontypes.AngmarMessage, rChan c
 			PusherID: "luciferankon",
 		}
 
-		a.StreamClient.Add("eventHub", startEvent.ConvertToEntry())
+		a.StreamClient.Add(message.Stream, startEvent.ConvertToEntry())
 		extractor := a.Generator.Generate(message.Project, message.Pusher, message.SHA)
 		err := a.DownloadClient.Download(message.URL, extractor)
 
