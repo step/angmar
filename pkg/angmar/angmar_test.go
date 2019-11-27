@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/step/angmar/pkg/queueclient"
+	"github.com/step/uruk/pkg/streamClient"
 	"github.com/step/saurontypes"
 
 	a "github.com/step/angmar/pkg/angmar"
@@ -33,6 +34,7 @@ func (d *DefaultExtractorGenerator) String() string {
 
 func TestAngmar(t *testing.T) {
 	queueClient := queueclient.NewDefaultClient()
+	streamClient := streamClient.NewDefaultClient()
 	generator := DefaultExtractorGenerator{}
 
 	server, archiveServer := testutils.CreateServer()
@@ -40,7 +42,7 @@ func TestAngmar(t *testing.T) {
 	apiClient := gh.GithubAPI{Client: server.Client()}
 
 	logger := a.AngmarLogger{Logger: log.New(ioutil.Discard, "", log.LstdFlags)}
-	angmar := a.NewAngmar(queueClient, &generator, apiClient, logger, 1, "/source")
+	angmar := a.NewAngmar(queueClient, &generator, apiClient, streamClient, logger, 1, "/source")
 	responseCh := make(chan bool)
 	stopCh := make(chan bool)
 

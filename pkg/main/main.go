@@ -29,7 +29,7 @@ func main() {
 
 	ghClient := gh.DefaultGithubAPI()
 
-	a := angmar.NewAngmar(redisClient, generator, ghClient, logger, numberOfWorkers, sourceVolPath)
+	a := angmar.NewAngmar(redisClient, generator, ghClient, redisClient, logger, numberOfWorkers, sourceVolPath)
 
 	r := make(chan bool, 100)
 	stop := make(chan bool)

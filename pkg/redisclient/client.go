@@ -1,6 +1,7 @@
 package redisclient
 
 import (
+	"github.com/step/saurontypes"
 	"time"
 
 	"github.com/go-redis/redis"
@@ -30,24 +31,26 @@ func (r RedisClient) Dequeue(name string) (string, error) {
 	return values[1], err
 }
 
-func (r RedisClient) Add(sName, key, value string) error {
-	entry := make(map[string]interface{})
-	entry[key] = value
+func (r RedisClient) Add(sName string, entries []saurontypes.Entry) error {
+	values := make(map[string]interface{})
+	for _, entry := range entries {
+		values[entry.Key] = entry.Value
+	}
 	r.actualClient.XAdd(&redis.XAddArgs{
 		Stream: sName,
-		ID: "*",
-		Values: entry,
+		ID:     "*",
+		Values: values,
 	})
 	return nil
 }
 
-func (r RedisClient) Read() error  {
+func (r RedisClient) Read() error {
 	resp := r.actualClient.XRead(&redis.XReadArgs{
 		Streams: []string{"eventHub"},
-		Count: 0,
-		Block: time.Minute,
+		Count:   0,
+		Block:   time.Minute,
 	})
-	
+
 	_, err := resp.Result()
 
 	if err != nil {

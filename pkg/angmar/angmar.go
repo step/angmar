@@ -10,6 +10,7 @@ import (
 	"github.com/step/angmar/pkg/queueclient"
 	"github.com/step/angmar/pkg/tarutils"
 	"github.com/step/saurontypes"
+	"github.com/step/uruk/pkg/streamClient"
 )
 
 // Angmar is a downloader service. It downloads the specified archieve
@@ -19,6 +20,7 @@ type Angmar struct {
 	QueueClient      queueclient.QueueClient
 	Generator        tarutils.ExtractorGenerator
 	DownloadClient   downloadclient.DownloadClient
+	StreamClient     streamClient.StreamClient
 	Logger           AngmarLogger
 	NumOfWorkers     int
 	SourceMountPoint string
@@ -36,6 +38,16 @@ func worker(id int, a Angmar, messages <-chan saurontypes.AngmarMessage, rChan c
 	for message := range messages {
 		fmt.Println(id, message)
 		a.Logger.ReceivedMessage(id, message)
+		startEvent := saurontypes.Event{
+			Source: "angmar",
+			Type: "start angmar",
+			FlowID: message.FlowID,
+			EventID: 1,
+			Timestamp: time.Now().String(),
+			PusherID: "luciferankon",
+		}
+
+		a.StreamClient.Add("eventHub", startEvent.ConvertToEntry())
 		extractor := a.Generator.Generate(message.Project, message.Pusher, message.SHA)
 		err := a.DownloadClient.Download(message.URL, extractor)
 
@@ -118,6 +130,7 @@ func NewAngmar(
 	qClient queueclient.QueueClient,
 	generator tarutils.ExtractorGenerator,
 	dClient downloadclient.DownloadClient,
+	sClient streamClient.StreamClient,
 	logger AngmarLogger,
 	numOfWorkers int,
 	sourceMountPoint string) Angmar {
@@ -126,5 +139,5 @@ func NewAngmar(
 		numOfWorkers = 1
 	}
 
-	return Angmar{qClient, generator, dClient, logger, numOfWorkers, sourceMountPoint}
+	return Angmar{qClient, generator, dClient, sClient, logger, numOfWorkers, sourceMountPoint}
 }
