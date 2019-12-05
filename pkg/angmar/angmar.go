@@ -33,21 +33,26 @@ func (a Angmar) String() string {
 	return builder.String()
 }
 
+func (a Angmar) publishEvent(message saurontypes.AngmarMessage, eventType, details string) {
+	event := saurontypes.Event{
+		Source:    "angmar",
+		Type:      eventType,
+		FlowID:    message.FlowID,
+		Timestamp: time.Now().String(),
+		PusherID:  message.Pusher,
+		Project:   message.Project,
+		Details:   details,
+	}
+	a.StreamClient.Add(message.Stream, event.ConvertToEntry())
+}
+
 func worker(id int, a Angmar, messages <-chan saurontypes.AngmarMessage, rChan chan<- bool) {
 	// messages is buffered, so range is a blocking call if there are no messages
 	for message := range messages {
 		fmt.Println(id, message)
 		a.Logger.ReceivedMessage(id, message)
-		startEvent := saurontypes.Event{
-			Source: "angmar",
-			Type: "start angmar",
-			FlowID: message.FlowID,
-			EventID: 1,
-			Timestamp: time.Now().String(),
-			PusherID: "luciferankon",
-		}
+		a.publishEvent(message, "receive_message", "Message received")
 
-		a.StreamClient.Add(message.Stream, startEvent.ConvertToEntry())
 		extractor := a.Generator.Generate(message.Project, message.Pusher, message.SHA)
 		err := a.DownloadClient.Download(message.URL, extractor)
 
@@ -56,6 +61,9 @@ func worker(id int, a Angmar, messages <-chan saurontypes.AngmarMessage, rChan c
 			rChan <- false
 			continue
 		}
+
+		downloadEventDetails := fmt.Sprintf("downloaded %s", message.URL)
+		a.publishEvent(message, "download", downloadEventDetails)
 
 		extractorBasePath := extractor.GetBasePath()
 		repoLocation := strings.Replace(extractorBasePath, a.SourceMountPoint+"/", "", 1)
@@ -72,6 +80,8 @@ func worker(id int, a Angmar, messages <-chan saurontypes.AngmarMessage, rChan c
 				continue
 			}
 			a.Logger.TaskPlacedOnQueue(id, message, q)
+			taskPlaceEventDetails := fmt.Sprintf("Task placed on queue %s", q)
+			a.publishEvent(message, "place_task", taskPlaceEventDetails)
 		}
 		rChan <- true
 	}
