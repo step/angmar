@@ -41,28 +41,28 @@ func TarGzFiles(files []MockFile, dirs []string, writer io.Writer) {
 }
 
 type MapFiles struct {
-	files    map[string]string
-	dirs     []string
-	basePath string
+	Files    map[string]string
+	Dirs     []string
+	BasePath string
 }
 
 func (mapFiles *MapFiles) ExtractFile(header tar.Header, reader io.Reader) error {
 	content, _ := ioutil.ReadAll(reader)
-	mapFiles.files[header.Name] = string(content)
+	mapFiles.Files[header.Name] = string(content)
 	return nil
 }
 
 func (mapFiles *MapFiles) ExtractDir(header tar.Header, reader io.Reader) error {
-	mapFiles.dirs = append(mapFiles.dirs, header.Name)
+	mapFiles.Dirs = append(mapFiles.Dirs, header.Name)
 	return nil
 }
 
 func (mapFiles *MapFiles) GetBasePath() string {
-	return mapFiles.basePath
+	return mapFiles.BasePath
 }
 
 func (mapFiles *MapFiles) String() string {
-	return fmt.Sprintf("%s\n%s\n%s", mapFiles.files, mapFiles.dirs, mapFiles.basePath)
+	return fmt.Sprintf("%s\n%s\n%s", mapFiles.Files, mapFiles.Dirs, mapFiles.BasePath)
 }
 
 func NewMapFiles() MapFiles {

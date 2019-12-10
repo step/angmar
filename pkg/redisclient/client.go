@@ -44,20 +44,26 @@ func (r RedisClient) Add(sName string, entries []saurontypes.Entry) error {
 	return nil
 }
 
-func (r RedisClient) Read() error {
+func (r RedisClient) Read(streams []string) []saurontypes.StreamEvent {
 	resp := r.actualClient.XRead(&redis.XReadArgs{
-		Streams: []string{"eventHub"},
+		Streams: streams,
 		Count:   0,
 		Block:   time.Minute,
 	})
 
-	_, err := resp.Result()
-
-	if err != nil {
-		return err
+	if len(resp.Val()) == 0 {
+		return []saurontypes.StreamEvent{}
 	}
-
-	return nil
+	
+	var events []saurontypes.StreamEvent
+	for _, val := range resp.Val()[0].Messages {
+		streamEvent := saurontypes.StreamEvent{
+			ID: val.ID,
+			Values: val.Values,
+		}
+		events = append(events, streamEvent)
+	}
+	return events
 }
 
 func (r RedisClient) SwitchQueue(src, dest string) (string, error) {
