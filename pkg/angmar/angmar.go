@@ -38,10 +38,11 @@ func (a Angmar) publishEvent(message saurontypes.AngmarMessage, eventType, detai
 		Source:    "angmar",
 		Type:      eventType,
 		FlowID:    message.FlowID,
-		Timestamp: time.Now().String(),
+		Timestamp: time.Now().Format("2 Jan 2006 15:04:05"),
 		PusherID:  message.Pusher,
 		Project:   message.Project,
 		Details:   details,
+		SHA:       message.SHA,
 	}
 	a.StreamClient.Add(message.Stream, event.ConvertToEntry())
 }
