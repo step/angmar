@@ -31,6 +31,16 @@ func (r RedisClient) Dequeue(name string) (string, error) {
 	return values[1], err
 }
 
+func (r RedisClient) Set(key, field, value string) {
+	r.actualClient.HSet(key, field, value)
+}
+
+func (r RedisClient) Get(key, field string) string {
+	get := r.actualClient.HGet(key, field)
+	result:= get.Val()
+	return result
+}
+
 func (r RedisClient) Add(sName string, entries []saurontypes.Entry) error {
 	values := make(map[string]interface{})
 	for _, entry := range entries {
