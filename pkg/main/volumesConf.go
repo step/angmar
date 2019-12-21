@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"log"
 	"os"
 	"path/filepath"
 
@@ -24,6 +25,10 @@ func getLogfileName() string {
 }
 
 func getLogfile() *os.File {
+	err := os.MkdirAll(logPath, 0755)
+	if err != nil {
+		log.Fatal(err)
+	}
 	file, err := os.OpenFile(getLogfileName(), os.O_RDWR|os.O_CREATE, 0755)
 	if err != nil {
 		fmt.Println(err)

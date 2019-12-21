@@ -55,12 +55,15 @@ github.com/step/saurontypes v0.0.0-20191127094913-fbe832ecf56f h1:OGcu8QYGTlPCyD
 github.com/step/saurontypes v0.0.0-20191127094913-fbe832ecf56f/go.mod h1:Mp1tCyd5L2wC/QoBiqa3stAn7h8Q17gDyZ1jmj9MyXg=
 github.com/step/saurontypes v0.0.0-20191127114135-1c7b69a4e64f h1:j/eu1+uMZCN7so/8bG9PcHgJRmD4jOn52Ak9R94j8hk=
 github.com/step/saurontypes v0.0.0-20191127114135-1c7b69a4e64f/go.mod h1:Mp1tCyd5L2wC/QoBiqa3stAn7h8Q17gDyZ1jmj9MyXg=
+github.com/step/saurontypes v0.0.0-20191216070616-49830a7aa8ae h1:LGSUZPNnESlUUr7NYMt8buer2BKbmeJ49AcEGYzy7bI=
+github.com/step/saurontypes v0.0.0-20191216070616-49830a7aa8ae/go.mod h1:Mp1tCyd5L2wC/QoBiqa3stAn7h8Q17gDyZ1jmj9MyXg=
 github.com/step/uruk v0.0.0-20191120175724-3cff83f88e1b h1:1d5D8alnajsWwKpml9NP18dqSwmnd9OiImJ2SgB9x0Q=
 github.com/step/uruk v0.0.0-20191120175724-3cff83f88e1b/go.mod h1:50ZonhII2bkKM85MCCAHKsI7TmxPMR2GoFrBAMHFQFw=
-github.com/step/uruk v0.0.0-20191127095430-9a65d97ffd22 h1:MhgIXXFkPR67pBSW+X/QbXqB/oR/S6iZKpKJ0F/TTk8=
 github.com/step/uruk v0.0.0-20191127095430-9a65d97ffd22/go.mod h1:Gv3Qfl5lOUYImW/WP6txnRiLjxaKiFwt6iupGHhwrF0=
 github.com/step/uruk v0.0.0-20191127114036-eb84283fad8d h1:HQKX+QnF7rMVS9Y+ItYqoNCMueuDTP2WgSKTJ0k7xbg=
 github.com/step/uruk v0.0.0-20191127114036-eb84283fad8d/go.mod h1:mJzoPWj/eT8v8nivRg3uWJRLjKqErA+xlib+K4CYPB8=
+github.com/step/uruk v0.0.0-20191219064028-1f20b02284f3 h1:Og4Yw4jq8OvhIRs3qRNh4wlXTWlwxUSRnQCWh6+SqXI=
+github.com/step/uruk v0.0.0-20191219064028-1f20b02284f3/go.mod h1:4jVn65gJ04dd0w5eilWlWf/qYcEHkiI+u9qVE3v3IUc=
 github.com/stretchr/objx v0.1.0/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=
 github.com/stretchr/objx v0.1.1/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=
 github.com/stretchr/testify v1.2.2/go.mod h1:a8OnRcib4nhh0OaRAV+Yts87kKdq0PP7pXfy6kDkUVs=
